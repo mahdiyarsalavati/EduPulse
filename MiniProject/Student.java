@@ -2,29 +2,12 @@ import java.util.List;
 import java.util.Objects;
 
 public class Student extends Person {
-    private String name;
     private int creditUnits = 0;
     private double averageGrade = 0.0;
     private double semesterGrade = 0.0;
     private String id;
     private Semester semester;
-    private String birthDate;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getBirthDate() {
-        return birthDate;
-    }
-
-    public void setBirthDate(String birthDate) {
-        this.birthDate = birthDate;
-    }
 
     public Student(String firstName, String lastName, List<Course> courses, String id, Semester semester) {
         super(firstName, lastName, courses);
