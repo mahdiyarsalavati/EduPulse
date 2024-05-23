@@ -122,7 +122,7 @@ public class Student extends Person {
         System.out.println(this.getFirstName() + " " + this.getLastName() + "'s courses:");
         int i = 1;
         for (Course course : getCourses()) {
-            System.out.println("" + i + ": Course's Name: " + course.getName() + " (" + course.getSemester() + " SEMESTER) " + " - Credit Unit: " + course.getCreditUnit() + " - Grade: " + course.getGrade(this));
+            System.out.println(i + ": Course's Name: " + course.getName() + " (" + course.getSemester() + " SEMESTER) " + " - Credit Unit: " + course.getCreditUnit() + " - Grade: " + course.getGrade(this));
             i++;
         }
         System.out.println("------------------");
