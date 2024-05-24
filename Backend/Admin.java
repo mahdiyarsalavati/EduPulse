@@ -4,6 +4,7 @@ public class Admin extends Teacher {
 
     private List<Teacher> teachers;
     private List<Student> students;
+    private List<Assignment> assignments;
 
     public Admin(String firstName, String lastName, List<Course> courses, char[] password, List<Teacher> teachers) {
         super(firstName, lastName, courses, "admin", password);
@@ -16,6 +17,10 @@ public class Admin extends Teacher {
 
     public void addCourse(Course course) {
         if (course != null && !getCourses().contains(course)) getCourses().add(course);
+    }
+
+    public void addAssignment(Assignment assignment) {
+        if (assignment != null && !assignments.contains(assignment)) assignments.add(assignment);
     }
 
     public List<Teacher> getTeachers() {
@@ -96,4 +101,20 @@ public class Admin extends Teacher {
         }
         return result;
     }
+
+    public String removeAssignmentByID(String ID) {
+        boolean wasFound = false;
+        for (Assignment assignment : assignments) {
+            if (assignment.getID().equals(ID)) {
+                wasFound = true;
+                assignments.remove(assignment);
+                break;
+            }
+        }
+        if (wasFound) {
+            return null;
+        }
+        return "Assignment was not found";
+    }
+
 }

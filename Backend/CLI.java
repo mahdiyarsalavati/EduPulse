@@ -116,7 +116,7 @@ public class CLI {
                         }
                         int i = 1;
                         for (String s : lines) {
-                            System.out.println(i + s.split(" ")[1] + " " + s.split(" ")[2] + " " + s.split(" ")[3]);
+                            System.out.println(i + " " + s.split(" ")[1] + " " + s.split(" ")[2] + " " + s.split(" ")[3]);
                             i++;
                         }
                         int chosenTeacherNum = scanner.nextInt();
@@ -148,9 +148,23 @@ public class CLI {
 
                     case 4:
                         System.out.println(YELLOW + "removing a course: ");
-                        System.out.print("ID: ");
-                        ID = scanner.nextLine();
-                        result = admin.removeCourseByID(ID);
+                        System.out.print("Choose the course: ");
+                        lines = new ArrayList<>();
+                        try {
+                            lines = Files.readAllLines(Paths.get("courses.txt"));
+                        } catch (IOException e) {
+                            System.out.println(RED + "Failed to read from file: " + e.getMessage());
+                            break;
+                        }
+                        i = 1;
+                        for (String s : lines) {
+                            System.out.println(i + " " + s.split(" ")[1] + " " + s.split(" ")[2]);
+                            i++;
+                        }
+                        int chosenCourseNum = scanner.nextInt();
+                        String chosenCourseID = lines.get(chosenCourseNum - 1).split(" ")[2].substring(3);
+                        result = admin.removeCourseByID(chosenCourseID);
+
                         if (result == null) System.out.println(GREEN + "Course removed successfully!");
                         else System.out.println(result);
 
@@ -167,7 +181,7 @@ public class CLI {
                             List<String> updatedLines = new ArrayList<>();
                             boolean found = false;
                             for (String line : lines) {
-                                if (!line.contains(ID)) {
+                                if (!line.contains(chosenCourseID)) {
                                     updatedLines.add(line);
                                 }
                             }
@@ -261,23 +275,25 @@ public class CLI {
                         }
                         i = 1;
                         for (String s : lines) {
-                            System.out.println(i + s.split(" ")[1] + " " + s.split(" ")[2]);
+                            System.out.println(i + " " + s.split(" ")[1] + " " + s.split(" ")[2]);
                             i++;
                         }
-                        int chosenCourseNum = scanner.nextInt();
-                        String chosenCourseID = lines.get(chosenCourseNum - 1).split(" ")[2].substring(3);
+                        chosenCourseNum = scanner.nextInt();
+                        chosenCourseID = lines.get(chosenCourseNum - 1).split(" ")[2].substring(3);
                         Course chosenCourse = admin.findCourseByID(chosenCourseID);
 
                         Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse, ID);
                         chosenCourse.addAssignment(assignment);
+                        admin.addAssignment(assignment);
 
                         break;
 
                     case 8:
                         System.out.println(YELLOW + "removing an assignment: ");
+
                         System.out.print("ID: ");
                         ID = scanner.nextLine();
-                        result = admin.removeStudentByID(ID);
+                        result = admin.removeAssignmentByID(ID);
                         if (result == null) System.out.println(GREEN + "Student removed successfully!");
                         else System.out.println(result);
 
