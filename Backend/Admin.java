@@ -15,14 +15,6 @@ public class Admin extends Teacher {
         if (teacher != null && !teachers.contains(teacher)) teachers.add(teacher);
     }
 
-    public void addCourse(Course course) {
-        if (course != null && !getCourses().contains(course)) getCourses().add(course);
-    }
-
-    public void addAssignment(Assignment assignment) {
-        if (assignment != null && !assignments.contains(assignment)) assignments.add(assignment);
-    }
-
     public List<Teacher> getTeachers() {
         return teachers;
     }

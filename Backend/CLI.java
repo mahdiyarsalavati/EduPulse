@@ -283,8 +283,7 @@ public class CLI {
                         Course chosenCourse = admin.findCourseByID(chosenCourseID);
 
                         Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse, ID);
-                        chosenCourse.addAssignment(assignment);
-                        admin.addAssignment(assignment);
+                        admin.addAssignment(chosenCourse, assignment);
 
                         break;
 
@@ -323,6 +322,40 @@ public class CLI {
                                 System.out.println(RED + "Failed to write to file: " + e.getMessage());
                             }
                         }
+
+                        break;
+
+                    case 9:
+                        System.out.println(YELLOW + "adding an project: ");
+                        System.out.print("Name: ");
+                        name = scanner.nextLine();
+                        System.out.print("Deadline: (from now by days)");
+                        n = scanner.nextInt();
+                        deadline = LocalDate.now().plusDays(n);
+                        System.out.print("Is Available? 1) Yes 2) No");
+                        isAvailable = scanner.nextInt() == 1;
+                        System.out.print("ID: ");
+                        ID = scanner.nextLine();
+                        System.out.print("Choose the course: ");
+                        lines = new ArrayList<>();
+                        try {
+                            lines = Files.readAllLines(Paths.get("courses.txt"));
+                        } catch (IOException e) {
+                            System.out.println(RED + "Failed to read from file: " + e.getMessage());
+                            break;
+                        }
+                        i = 1;
+                        for (String s : lines) {
+                            System.out.println(i + " " + s.split(" ")[1] + " " + s.split(" ")[2]);
+                            i++;
+                        }
+                        chosenCourseNum = scanner.nextInt();
+                        chosenCourseID = lines.get(chosenCourseNum - 1).split(" ")[2].substring(3);
+                        chosenCourse = admin.findCourseByID(chosenCourseID);
+
+                        Project project = new Project(deadline, isAvailable, chosenCourse, ID, name);
+                        chosenCourse.addProject(project);
+                        admin.addProject(chosenCourse, project);
 
                         break;
 
