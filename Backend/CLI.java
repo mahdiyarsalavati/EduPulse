@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 public class CLI {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        Console console = System.console();
 
         String BLACK = "\u001B[30m";
         String RED = "\u001B[31m";
@@ -50,10 +52,9 @@ public class CLI {
                         String last_name = scanner.nextLine();
                         System.out.print("Username: ");
                         String ID = scanner.nextLine();
-                        System.out.print("Password: ");
-                        String password = scanner.nextLine();
+                        char[] password = console.readPassword("Password: ");
 
-                        Teacher teacher = new Teacher(first_name, last_name, new ArrayList<>(), ID, password.toCharArray());
+                        Teacher teacher = new Teacher(first_name, last_name, new ArrayList<>(), ID, password);
                         admin.addTeacher(teacher);
 
                         try (FileWriter writer = new FileWriter("teachers.txt", true)) {
@@ -182,7 +183,25 @@ public class CLI {
 
                     case 5:
                         System.out.println(YELLOW + "adding a student: ");
+                        System.out.print("First Name: ");
+                        first_name = scanner.nextLine();
+                        System.out.print("Last Name: ");
+                        last_name = scanner.nextLine();
+                        System.out.print("ID: ");
+                        ID = scanner.nextLine();
+                        password = console.readPassword("Password: ");
+                        System.out.println("Semester: ");
+                        semester = Semester.valueOf(scanner.nextLine());
 
+                        Student student = new Student(first_name, last_name, new ArrayList<>(), password, ID, semester);
+                        admin.getStudents().add(student);
+
+                        try (FileWriter writer = new FileWriter("students.txt", true)) {
+                            writer.write(student.toString() + "\n");
+                            System.out.println(GREEN + "Student added successfully!");
+                        } catch (IOException e) {
+                            System.out.println(RED + "Failed to write to file");
+                        }
                         break;
                 }
                 System.out.println(CLEAR_SCREEN);
@@ -231,7 +250,8 @@ public class CLI {
         System.out.println("14) extend deadline of project");
         System.out.println("15) activate assignment");
         System.out.println("16) activate project");
-        System.out.println("17) exit");
+        System.out.println("17) add student to a course");
+        System.out.println("18) exit");
 
         return getAnInt(scanner, color);
     }

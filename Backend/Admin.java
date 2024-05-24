@@ -3,6 +3,7 @@ import java.util.List;
 public class Admin extends Teacher {
 
     private List<Teacher> teachers;
+    private List<Student> students;
 
     public Admin(String firstName, String lastName, List<Course> courses, char[] password, List<Teacher> teachers) {
         super(firstName, lastName, courses, "admin", password);
@@ -23,9 +24,8 @@ public class Admin extends Teacher {
         return teachers;
     }
 
-    @Override
-    public List<Course> getCourses() {
-        return getCourses();
+    public List<Student> getStudents() {
+        return students;
     }
 
     public String removeTeacherByID(String ID) {

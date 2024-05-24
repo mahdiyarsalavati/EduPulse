@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -81,13 +82,6 @@ public class Student extends Person {
         semesterGrade = result;
     }
 
-    @Override
-    public String toString() {
-        updateAverageGrade();
-        updateSemesterGrade();
-        return "Name: " + getFirstName() + "\n" + "Last Name: " + getLastName() + "\n" + "SEMESTER: " + getSemester() + "\n" + "Average grade: " + averageGrade + "\n" + "Semester grade: " + semesterGrade + "\n" + "---------------------";
-    }
-
     public void printCourses() {
         if (getCourses().isEmpty()) {
             System.out.println("There is no courses");
@@ -123,5 +117,10 @@ public class Student extends Person {
     @Override
     public int hashCode() {
         return Objects.hash(getID());
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" + " semester=" + semester + " ID=" + getID() + "}" + " password=" + Arrays.toString(getPassword()) + "}";
     }
 }
