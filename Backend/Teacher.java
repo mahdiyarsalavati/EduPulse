@@ -1,9 +1,10 @@
+import java.util.Arrays;
 import java.util.List;
 
 public class Teacher extends Person {
 
-    public Teacher(String firstName, String lastName, List<Course> courses, char[] password) {
-        super(firstName, lastName, courses, password);
+    public Teacher(String firstName, String lastName, List<Course> courses, String ID, char[] password) {
+        super(firstName, lastName, courses, ID, password);
     }
 
     public void addAssignment(Course course, Assignment assignment) {
@@ -107,5 +108,8 @@ public class Teacher extends Person {
     }
 
 
-
+    @Override
+    public String toString() {
+        return "Teacher{First Name: " + getFirstName() + "Last Name: " + getLastName() + "ID: " + getID() + "Password: " + Arrays.toString(getPassword()) + "} \n";
+    }
 }

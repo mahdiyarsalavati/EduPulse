@@ -5,23 +5,17 @@ public class Student extends Person {
     private int creditUnits = 0;
     private double averageGrade = 0.0;
     private double semesterGrade = 0.0;
-    private String id;
     private Semester semester;
 
 
     public Student(String firstName, String lastName, List<Course> courses, char[] password, String id, Semester semester) {
-        super(firstName, lastName, courses, password);
+        super(firstName, lastName, courses, id, password);
         for (Course course : courses) {
             this.creditUnits += course.getCreditUnit();
         }
-        this.id = id;
         this.semester = semester;
         updateAverageGrade();
         updateSemesterGrade();
-    }
-
-    public void setid(String id) {
-        this.id = id;
     }
 
     public void setSemester(Semester semester) {
@@ -50,9 +44,6 @@ public class Student extends Person {
         return semesterGrade;
     }
 
-    public String getid() {
-        return id;
-    }
 
     public Semester getSemester() {
         return semester;
@@ -126,11 +117,11 @@ public class Student extends Person {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Student student = (Student) o;
-        return Objects.equals(id, student.id);
+        return Objects.equals(getID(), student.getID());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(getID());
     }
 }

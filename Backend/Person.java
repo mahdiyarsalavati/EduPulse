@@ -5,15 +5,24 @@ public class Person {
     private String lastName;
     private List<Course> courses;
     private int coursesLength;
-
+    private String ID;
     private char[] password;
 
-    public Person(String firstName, String lastName, List<Course> courses, char[] password) {
+    public char[] getPassword() {
+        return password;
+    }
+
+    public void setPassword(char[] password) {
+        this.password = password;
+    }
+
+    public Person(String firstName, String lastName, List<Course> courses, String ID, char[] password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.courses = courses;
         this.coursesLength = courses.size();
         this.password = password;
+        this.ID = ID;
     }
 
     public String getFirstName() {
@@ -54,5 +63,13 @@ public class Person {
 
     public int getCoursesLength() {
         return coursesLength;
+    }
+
+    public String getID() {
+        return ID;
+    }
+
+    public void setID(String ID) {
+        this.ID = ID;
     }
 }

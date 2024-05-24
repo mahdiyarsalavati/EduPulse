@@ -1,13 +1,23 @@
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
+import java.io.FileWriter;
+import java.io.IOException;
 
-import static java.awt.Color.*;
 
 public class CLI {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
+        String BLACK = "\u001B[30m";
+        String RED = "\u001B[31m";
+        String GREEN = "\u001B[32m";
+        String YELLOW = "\u001B[33m";
+        String BLUE = "\u001B[34m";
+        String PURPLE = "\u001B[35m";
+        String CYAN = "\u001B[36m";
+        String WHITE = "\u001B[37m";
         final String CLEAR_SCREEN = "\033[H\033[2J";
 
         System.out.print(CLEAR_SCREEN);
@@ -16,22 +26,44 @@ public class CLI {
         System.out.println(BLUE + "Welcome to the CLI interface!");
         System.out.print(GREEN + "Choose your role:" + "\n" + "1) Teacher" + "\n" + "2) Admin" + "\n");
 
-        int role = 0;
-        role = getAnInt(scanner);
+        int role = getAnInt(scanner, RED);
 
         System.out.print(CLEAR_SCREEN);
         System.out.flush();
 
         if (role == 1) {
-            showTeacherMenu(GREEN);
+            int input = showTeacherMenu(scanner, GREEN);
         } else {
-            showAdminMenu(YELLOW);
+            int input = showAdminMenu(scanner, YELLOW);
+            switch (input) {
+                case 1:
+                    System.out.println("First Name: ");
+                    scanner.nextLine();
+                    String first_name = scanner.nextLine();
+                    System.out.println("Last Name: ");
+                    String last_name = scanner.nextLine();
+                    System.out.println("Username: ");
+                    String ID = scanner.nextLine();
+                    System.out.println("Password: ");
+                    String password = scanner.nextLine();
+
+                    Teacher teacher = new Teacher(first_name, last_name, new ArrayList<>(), ID, password.toCharArray());
+
+                    try (FileWriter writer = new FileWriter("teachers.txt", true)) {
+                        writer.write(teacher.toString() + "\n");
+                        System.out.println(GREEN + "Teacher added successfully!");
+                    } catch (IOException e) {
+                        System.out.println(RED + "Failed to write to file");
+                    }
+
+                    break;
+            }
         }
 
         scanner.close();
     }
 
-    private static int getAnInt(Scanner scanner) {
+    private static int getAnInt(Scanner scanner, String color) {
         int result = 0;
         boolean validInput = false;
 
@@ -41,17 +73,17 @@ public class CLI {
                 if (result == 1 || result == 2) {
                     validInput = true;
                 } else {
-                    System.out.println(RED + "Please enter a valid number:");
+                    System.out.println(color + "Please enter a valid number:");
                 }
             } catch (InputMismatchException e) {
-                System.out.println(RED + "Invalid input. Please enter a number:");
+                System.out.println(color + "Invalid input. Please enter a number:");
                 scanner.nextLine();
             }
         }
         return result;
     }
 
-    private static void showAdminMenu(Color color) {
+    private static int showAdminMenu(Scanner scanner, String color) {
         System.out.println(color + "Admin Dashboard:");
         System.out.println("1) add teacher");
         System.out.println("2) remove teacher");
@@ -67,11 +99,13 @@ public class CLI {
         System.out.println("12) grade student");
         System.out.println("13) extend deadline of assignment");
         System.out.println("14) extend deadline of project");
-        System.out.println("15) active assignment");
-        System.out.println("16) active project");
+        System.out.println("15) activate assignment");
+        System.out.println("16) activate project");
+
+        return getAnInt(scanner, color);
     }
 
-    private static void showTeacherMenu(Color color) {
+    private static int showTeacherMenu(Scanner scanner, String color) {
         System.out.println(color + "Teacher Dashboard:");
         System.out.println("1) add course");
         System.out.println("2) remove course");
@@ -85,7 +119,8 @@ public class CLI {
         System.out.println("10) grade student");
         System.out.println("11) extend deadline of assignment");
         System.out.println("12) extend deadline of project");
-        System.out.println("13) active assignment");
-        System.out.println("14) active project");
+        System.out.println("13) activate assignment");
+        System.out.println("14) activate project");
+        return getAnInt(scanner, color);
     }
 }
