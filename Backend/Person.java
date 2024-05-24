@@ -20,7 +20,8 @@ public class Person {
         this.firstName = firstName;
         this.lastName = lastName;
         this.courses = courses;
-        this.coursesLength = courses.size();
+        if (courses == null) this.coursesLength = 0;
+        else this.coursesLength = courses.size();
         this.password = password;
         this.ID = ID;
     }
@@ -58,6 +59,9 @@ public class Person {
     public void removeCourse(Course course) {
         if (!courses.contains(course)) return;
         courses.remove(course);
+        for (StudentItem st : course.getStudentItems()) {
+            st.getStudent().removeCourse(course);
+        }
         this.coursesLength--;
     }
 

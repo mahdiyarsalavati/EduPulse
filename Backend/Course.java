@@ -277,6 +277,6 @@ public class Course {
 
     @Override
     public String toString() {
-        return "Course{" + " creditUnit=" + creditUnit + " ID=" + ID + "}";
+        return "Course{" + " Name=" + name + " creditUnit=" + creditUnit + " ID=" + ID + "}";
     }
 }
