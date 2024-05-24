@@ -3,10 +3,10 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        Teacher teacher = new Teacher("Bob", "Anderson", new ArrayList<>());
+        Teacher teacher = new Teacher("Bob", "Anderson", new ArrayList<>(), "1234".toCharArray());
 
-        Student student1 = new Student("Ali", "Alavi", new ArrayList<>(), "402243104", Semester.SECOND);
-        Student student2 = new Student("Taghi", "Taghavi", new ArrayList<>(), "402243001", Semester.FIRST);
+        Student student1 = new Student("Ali", "Alavi", new ArrayList<>(), "1234".toCharArray(), "402243104", Semester.SECOND);
+        Student student2 = new Student("Taghi", "Taghavi", new ArrayList<>(),"1234".toCharArray(),  "402243001", Semester.FIRST);
 
         List<Student> students = new ArrayList<>();
         students.add(student1);

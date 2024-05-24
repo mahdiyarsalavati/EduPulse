@@ -6,8 +6,8 @@ public class Admin extends Teacher {
     private List<Course> courses;
 
 
-    public Admin(String firstName, String lastName, List<Course> courses, List<Person> teachers) {
-        super(firstName, lastName, courses);
+    public Admin(String firstName, String lastName, List<Course> courses, char[] password, List<Person> teachers) {
+        super(firstName, lastName, courses, password);
         this.teachers = teachers;
     }
 

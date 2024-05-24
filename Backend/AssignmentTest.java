@@ -11,7 +11,7 @@ public class AssignmentTest {
 
     @BeforeEach
     public void setUp() {
-        Teacher teacher = new Teacher("Ali", "Alavi", new ArrayList<>());
+        Teacher teacher = new Teacher("Ali", "Alavi", new ArrayList<>(), "1234".toCharArray());
         course = new Course("Test Course", "Test Prof", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, teacher);
         assignment = new Assignment(7, true, course);
     }

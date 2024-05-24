@@ -9,8 +9,8 @@ public class Student extends Person {
     private Semester semester;
 
 
-    public Student(String firstName, String lastName, List<Course> courses, String id, Semester semester) {
-        super(firstName, lastName, courses);
+    public Student(String firstName, String lastName, List<Course> courses, char[] password, String id, Semester semester) {
+        super(firstName, lastName, courses, password);
         for (Course course : courses) {
             this.creditUnits += course.getCreditUnit();
         }

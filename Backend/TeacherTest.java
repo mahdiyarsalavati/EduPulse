@@ -14,13 +14,13 @@ public class TeacherTest {
 
     @BeforeEach
     void setup() {
-        teacher = new Teacher("Bob", "Anderson", new ArrayList<>());
+        teacher = new Teacher("Bob", "Anderson", new ArrayList<>(), "1234".toCharArray());
         course1 = new Course("Test Course1", "Test Prof", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.SECOND, teacher);
         course2 = new Course("Test Course2", "Test Prof", 4, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-02", Semester.SECOND, teacher);
         teacher.addCourse(course1);
         teacher.addCourse(course2);
-        student1 = new Student("Test", "Student1", new ArrayList<>(), "402243104", Semester.SECOND);
-        student2 = new Student("Test", "Student2", new ArrayList<>(), "402243001", Semester.SECOND);
+        student1 = new Student("Test", "Student1", new ArrayList<>(), "1234".toCharArray(), "402243104", Semester.SECOND);
+        student2 = new Student("Test", "Student2", new ArrayList<>(), "1234".toCharArray(), "402243001", Semester.SECOND);
         assignment = new Assignment(7, true, course1);
     }
 

@@ -6,11 +6,14 @@ public class Person {
     private List<Course> courses;
     private int coursesLength;
 
-    public Person(String firstName, String lastName, List<Course> courses) {
+    private char[] password;
+
+    public Person(String firstName, String lastName, List<Course> courses, char[] password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.courses = courses;
         this.coursesLength = courses.size();
+        this.password = password;
     }
 
     public String getFirstName() {

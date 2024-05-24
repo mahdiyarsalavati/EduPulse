@@ -14,11 +14,11 @@ public class CourseTest {
 
     @BeforeEach
     public void setUp() {
-        teacher = new Teacher("Bob", "Anderson", new ArrayList<>());
+        teacher = new Teacher("Bob", "Anderson", new ArrayList<>(), "1234".toCharArray());
         course = new Course("Test Course", "Test Prof", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, teacher);
         teacher.addCourse(course);
-        student1 = new Student("Test", "Student1", new ArrayList<>(), "402243104", Semester.SECOND);
-        student2 = new Student("Test", "Student2", new ArrayList<>(), "402243001", Semester.SECOND);
+        student1 = new Student("Test", "Student1", new ArrayList<>(), "1234".toCharArray(), "402243104", Semester.SECOND);
+        student2 = new Student("Test", "Student2", new ArrayList<>(), "1234".toCharArray(), "402243001", Semester.SECOND);
         assignment1 = new Assignment(7, true, course);
         assignment2 = new Assignment(10, false, course);
         project1 = new Project(7, true, course, "Test Project1");
@@ -75,7 +75,7 @@ public class CourseTest {
         assertFalse(test3);
         assertTrue(test4);
 
-        assertThrows(IllegalArgumentException.class, () -> course.removeStudent(new Student("Test", "Student3", new ArrayList<>(), "402243104", Semester.SECOND)));
+        assertThrows(IllegalArgumentException.class, () -> course.removeStudent(new Student("Test", "Student3", new ArrayList<>(), "1234".toCharArray(),"402243104", Semester.SECOND)));
     }
 
     @Test

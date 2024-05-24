@@ -13,7 +13,7 @@ public class StudentTest {
 
     @BeforeEach
     public void setUp() {
-        teacher = new Teacher("Ali", "Alavi", new ArrayList<>());
+        teacher = new Teacher("Ali", "Alavi", new ArrayList<>(), "1234".toCharArray());
 
         course1 = new Course("Course 1", "Ali Alavi", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, teacher);
         course2 = new Course("Course 2", "Ali Alavi", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, teacher);
@@ -21,7 +21,7 @@ public class StudentTest {
         teacher.addCourse(course1);
         teacher.addCourse(course2);
 
-        student = new Student("Test", "Student", new ArrayList<>(), "402243104", Semester.SECOND);
+        student = new Student("Test", "Student", new ArrayList<>(), "1234".toCharArray(), "402243104", Semester.SECOND);
 
         teacher.addStudent(course1, student);
         teacher.addStudent(course2, student);
@@ -29,7 +29,7 @@ public class StudentTest {
 
     @Test
     public void testAddRemoveCourse() {
-        Course course3 = new Course("Course 3", "Prof 3", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, new Teacher("Ali", "Alavi", new ArrayList<>()));
+        Course course3 = new Course("Course 3", "Prof 3", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, new Teacher("Ali", "Alavi", new ArrayList<>(), "1234".toCharArray()));
         student.addCourse(course3);
         assertEquals(9, student.getCreditUnits());
         assertTrue(student.getCourses().contains(course3));

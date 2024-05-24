@@ -1,8 +1,9 @@
 import java.util.List;
 
 public class Teacher extends Person {
-    public Teacher(String firstName, String lastName, List<Course> courses) {
-        super(firstName, lastName, courses);
+
+    public Teacher(String firstName, String lastName, List<Course> courses, char[] password) {
+        super(firstName, lastName, courses, password);
     }
 
     public void addAssignment(Course course, Assignment assignment) {
