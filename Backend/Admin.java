@@ -83,4 +83,17 @@ public class Admin extends Teacher {
         }
         return "Student was not found";
     }
+
+    public Course findCourseByID(String ID) {
+        Course result = null;
+        boolean wasFound = false;
+        for (Course course : getCourses()) {
+            if (course.getID().equals(ID)) {
+                wasFound = true;
+                result = course;
+                break;
+            }
+        }
+        return result;
+    }
 }

@@ -2,6 +2,7 @@ import java.awt.*;
 import java.io.Console;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
@@ -116,6 +117,7 @@ public class CLI {
                         int i = 1;
                         for (String s : lines) {
                             System.out.println(i + s.split(" ")[1] + " " + s.split(" ")[2] + " " + s.split(" ")[3]);
+                            i++;
                         }
                         int chosenTeacherNum = scanner.nextInt();
                         String chosenTeacherID = lines.get(chosenTeacherNum - 1).split(" ")[3].substring(3);
@@ -241,8 +243,34 @@ public class CLI {
 
                         break;
                     case 7:
+                        System.out.println(YELLOW + "adding a course: ");
+                        System.out.print("Deadline: (from now by days)");
+                        int n = scanner.nextInt();
+                        LocalDate deadline = LocalDate.now().plusDays(n);
+                        System.out.print("Is Available? 1) Yes 2) No");
+                        isAvailable = scanner.nextInt() == 1;
+                        System.out.print("Choose the course: ");
+                        lines = new ArrayList<>();
+                        try {
+                            lines = Files.readAllLines(Paths.get("courses.txt"));
+                        } catch (IOException e) {
+                            System.out.println(RED + "Failed to read from file: " + e.getMessage());
+                            break;
+                        }
+                        i = 1;
+                        for (String s : lines) {
+                            System.out.println(i + s.split(" ")[1] + " " + s.split(" ")[2]);
+                            i++;
+                        }
+                        int chosenCourseNum = scanner.nextInt();
+                        String chosenCourseID = lines.get(chosenCourseNum - 1).split(" ")[2].substring(3);
+                        Course chosenCourse = admin.findCourseByID(chosenCourseID);
+
+                        Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse);
+                        chosenCourse.addAssignment(assignment);
 
                         break;
+
                 }
                 System.out.println(CLEAR_SCREEN);
                 showAdminMenu(scanner, YELLOW);
