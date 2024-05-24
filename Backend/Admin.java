@@ -11,13 +11,11 @@ public class Admin extends Teacher {
     }
 
     public void addTeacher(Teacher teacher) {
-        if (teacher != null && !teachers.contains(teacher))
-            teachers.add(teacher);
+        if (teacher != null && !teachers.contains(teacher)) teachers.add(teacher);
     }
 
     public void addCourse(Course course) {
-        if (course != null && !getCourses().contains(course))
-            getCourses().add(course);
+        if (course != null && !getCourses().contains(course)) getCourses().add(course);
     }
 
     public List<Teacher> getTeachers() {
@@ -69,5 +67,18 @@ public class Admin extends Teacher {
             return null;
         }
         return "Course was not found";
+    }
+
+    public String removeStudentByID(String ID) {
+        boolean wasFound = false;
+        for (Student student : students) {
+            if (student.getID().equals(ID)) {
+                wasFound = true;
+                students.remove(student) break;
+            }
+        } if (wasFound) {
+            return null;
+        }
+        return "Student was not found";
     }
 }

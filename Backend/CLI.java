@@ -203,6 +203,43 @@ public class CLI {
                             System.out.println(RED + "Failed to write to file");
                         }
                         break;
+
+                    case 6:
+                        System.out.println(YELLOW + "removing a student: ");
+                        System.out.print("ID: ");
+                        ID = scanner.nextLine();
+                        result = admin.removeStudentByID(ID);
+                        if (result == null) System.out.println(GREEN + "Student removed successfully!");
+                        else System.out.println(result);
+
+                        // deleting student from teachers file
+                        if (result == null) {
+                            lines = new ArrayList<>();
+                            try {
+                                lines = Files.readAllLines(Paths.get("students.txt"));
+                            } catch (IOException e) {
+                                System.out.println(RED + "Failed to read from file: " + e.getMessage());
+                                break;
+                            }
+
+                            List<String> updatedLines = new ArrayList<>();
+                            boolean found = false;
+                            for (String line : lines) {
+                                if (!line.contains(ID)) {
+                                    updatedLines.add(line);
+                                }
+                            }
+
+                            try (FileWriter writer = new FileWriter("students.txt", false)) {
+                                for (String line : updatedLines) {
+                                    writer.write(line + "\n");
+                                }
+                            } catch (IOException e) {
+                                System.out.println(RED + "Failed to write to file: " + e.getMessage());
+                            }
+                        }
+
+                        break;
                 }
                 System.out.println(CLEAR_SCREEN);
                 showAdminMenu(scanner, YELLOW);
