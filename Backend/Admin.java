@@ -74,9 +74,11 @@ public class Admin extends Teacher {
         for (Student student : students) {
             if (student.getID().equals(ID)) {
                 wasFound = true;
-                students.remove(student) break;
+                students.remove(student);
+                break;
             }
-        } if (wasFound) {
+        }
+        if (wasFound) {
             return null;
         }
         return "Student was not found";

@@ -240,6 +240,9 @@ public class CLI {
                         }
 
                         break;
+                    case 7:
+
+                        break;
                 }
                 System.out.println(CLEAR_SCREEN);
                 showAdminMenu(scanner, YELLOW);

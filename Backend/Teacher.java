@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -91,12 +92,12 @@ public class Teacher extends Person {
         }
     }
 
-    public void extendDeadline(Assignment assignment, int day) {
-        assignment.setDeadline(assignment.getDeadline() + day);
+    public void extendDeadline(Assignment assignment, int days) {
+        assignment.extendDeadlineByDays(days);
     }
 
-    public void extendDeadline(Project project, int day) {
-        project.setDeadline(project.getDeadline() + day);
+    public void extendDeadline(Project project, int days) {
+        project.extendDeadlineByDays(days);
     }
 
     public void activeAssignment(Assignment assignment, boolean isAvailable) {
@@ -111,6 +112,4 @@ public class Teacher extends Person {
     public String toString() {
         return "Teacher{ FirstName=" + getFirstName().replaceAll(" ", "") + " LastName=" + getLastName().replaceAll(" ", "") + " ID=" + getID().replaceAll(" ", "") + " Password=" + Arrays.toString(getPassword()) + "} \n";
     }
-
-
 }

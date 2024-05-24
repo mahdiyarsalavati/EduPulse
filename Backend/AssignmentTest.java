@@ -1,6 +1,7 @@
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -13,19 +14,21 @@ public class AssignmentTest {
     public void setUp() {
         Teacher teacher = new Teacher("Ali", "Alavi", new ArrayList<>(), "402243010", "1234".toCharArray());
         course = new Course("Test Course", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, teacher, "4021");
-        assignment = new Assignment(7, true, course);
+        assignment = new Assignment(LocalDate.now().plusDays(7), true, course); // Initial deadline is 7 days from now
     }
 
     @Test
     public void testSetDeadline() {
-        assignment.setDeadline(10);
-        assertEquals(10, assignment.getDeadline());
+        LocalDate newDeadline = LocalDate.now().plusDays(10);
+        assignment.setDeadline(newDeadline);
+        assertEquals(newDeadline, assignment.getDeadline());
     }
 
     @Test
     public void testExtendDeadlineByDays() {
+        LocalDate expectedDeadline = assignment.getDeadline().plusDays(3);
         assignment.extendDeadlineByDays(3);
-        assertEquals(10, assignment.getDeadline());
+        assertEquals(expectedDeadline, assignment.getDeadline());
     }
 
     @Test
@@ -36,7 +39,7 @@ public class AssignmentTest {
 
     @Test
     public void testGetDeadline() {
-        assertEquals(7, assignment.getDeadline());
+        assertEquals(LocalDate.now().plusDays(7), assignment.getDeadline());
     }
 
     @Test
