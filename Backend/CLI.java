@@ -35,6 +35,7 @@ public class CLI {
             int input = showTeacherMenu(scanner, GREEN);
         } else {
             int input = showAdminMenu(scanner, YELLOW);
+            System.out.print(CLEAR_SCREEN);
             switch (input) {
                 case 1:
                     System.out.println("First Name: ");
@@ -55,6 +56,8 @@ public class CLI {
                     } catch (IOException e) {
                         System.out.println(RED + "Failed to write to file");
                     }
+                    break;
+                case 2:
 
                     break;
             }
