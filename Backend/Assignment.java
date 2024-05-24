@@ -10,13 +10,15 @@ public class Assignment {
     private boolean isAvailable;
     private final Course course;
     private static List<Assignment> archive = new ArrayList<>();
+    private String ID;
 
-    public Assignment(LocalDate deadline, boolean isAvailable, Course course) {
+    public Assignment(LocalDate deadline, boolean isAvailable, Course course, String ID) {
         this.creationDate = LocalDate.now();
         this.deadline = deadline;
         this.isAvailable = isAvailable;
         this.course = course;
-        if(!isAvailable) archive.add(this);
+        this.ID = ID;
+        if (!isAvailable) archive.add(this);
     }
 
     public void setDeadline(LocalDate deadline) {
@@ -29,7 +31,7 @@ public class Assignment {
 
     public void setAvailable(boolean available) {
         isAvailable = available;
-        if(isAvailable) archive.remove(this);
+        if (isAvailable) archive.remove(this);
     }
 
     public LocalDate getDeadline() {
@@ -52,19 +54,20 @@ public class Assignment {
         return ChronoUnit.DAYS.between(this.creationDate, LocalDate.now());
     }
 
+    public String getID() {
+        return ID;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Assignment that = (Assignment) o;
-        return isAvailable == that.isAvailable &&
-                Objects.equals(creationDate, that.creationDate) &&
-                Objects.equals(deadline, that.deadline) &&
-                Objects.equals(course, that.course);
+        return Objects.equals(ID, that.ID);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(creationDate, deadline, isAvailable, course);
+        return Objects.hash(ID);
     }
 }

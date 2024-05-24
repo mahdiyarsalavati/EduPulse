@@ -22,7 +22,7 @@ public class TeacherTest {
         teacher.addCourse(course2);
         student1 = new Student("Test", "Student1", new ArrayList<>(), "1234".toCharArray(), "402243104", Semester.SECOND);
         student2 = new Student("Test", "Student2", new ArrayList<>(), "1234".toCharArray(), "402243001", Semester.SECOND);
-        assignment = new Assignment(LocalDate.now().plusDays(7), true, course1);
+        assignment = new Assignment(LocalDate.now().plusDays(7), true, course1, "40211");
     }
 
     @Test
