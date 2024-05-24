@@ -2,11 +2,11 @@ import java.util.List;
 
 public class Admin extends Teacher {
 
-    private List<Person> teachers;
+    private List<Teacher> teachers;
     private List<Course> courses;
 
 
-    public Admin(String firstName, String lastName, List<Course> courses, char[] password, List<Person> teachers) {
+    public Admin(String firstName, String lastName, List<Course> courses, char[] password, List<Teacher> teachers) {
         super(firstName, lastName, courses, "admin", password);
         this.teachers = teachers;
     }
@@ -21,5 +21,27 @@ public class Admin extends Teacher {
             courses.add(course);
     }
 
+    public List<Teacher> getTeachers() {
+        return teachers;
+    }
 
+    @Override
+    public List<Course> getCourses() {
+        return courses;
+    }
+
+    public String removeTeacherByID(String ID) {
+        boolean wasFound = false;
+        for(Teacher teacher : teachers) {
+            if(teacher.getID().equals(ID)) {
+                wasFound = true;
+                teachers.remove(teacher);
+                break;
+            }
+        }
+        if(wasFound) {
+            return null;
+        }
+        return "Teacher was not found";
+    }
 }

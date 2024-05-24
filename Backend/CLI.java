@@ -30,36 +30,48 @@ public class CLI {
 
         System.out.print(CLEAR_SCREEN);
         System.out.flush();
-
+        Admin admin = new Admin("admin", "admin", null, "admin".toCharArray(), new ArrayList<>());
         if (role == 1) {
             int input = showTeacherMenu(scanner, GREEN);
         } else {
-            int input = showAdminMenu(scanner, YELLOW);
-            System.out.print(CLEAR_SCREEN);
-            switch (input) {
-                case 1:
-                    System.out.println("First Name: ");
-                    scanner.nextLine();
-                    String first_name = scanner.nextLine();
-                    System.out.println("Last Name: ");
-                    String last_name = scanner.nextLine();
-                    System.out.println("Username: ");
-                    String ID = scanner.nextLine();
-                    System.out.println("Password: ");
-                    String password = scanner.nextLine();
+            boolean exit = false;
+            while (!exit) {
+                int input = showAdminMenu(scanner, YELLOW);
+                System.out.print(CLEAR_SCREEN);
+                switch (input) {
+                    case 1:
+                        System.out.println(YELLOW + "Adding a teacher: ");
+                        System.out.print("First Name: ");
+                        String first_name = scanner.nextLine();
+                        System.out.print("Last Name: ");
+                        String last_name = scanner.nextLine();
+                        System.out.print("Username: ");
+                        String ID = scanner.nextLine();
+                        System.out.print("Password: ");
+                        String password = scanner.nextLine();
 
-                    Teacher teacher = new Teacher(first_name, last_name, new ArrayList<>(), ID, password.toCharArray());
+                        Teacher teacher = new Teacher(first_name, last_name, new ArrayList<>(), ID, password.toCharArray());
+                        admin.addTeacher(teacher);
 
-                    try (FileWriter writer = new FileWriter("teachers.txt", true)) {
-                        writer.write(teacher.toString() + "\n");
-                        System.out.println(GREEN + "Teacher added successfully!");
-                    } catch (IOException e) {
-                        System.out.println(RED + "Failed to write to file");
-                    }
-                    break;
-                case 2:
+                        try (FileWriter writer = new FileWriter("teachers.txt", true)) {
+                            writer.write(teacher.toString() + "\n");
+                            System.out.println(GREEN + "Teacher added successfully!");
+                        } catch (IOException e) {
+                            System.out.println(RED + "Failed to write to file");
+                        }
 
-                    break;
+                        break;
+                    case 2:
+                        System.out.println(YELLOW + "removing a teacher: ");
+                        System.out.print("Username: ");
+                        ID = scanner.nextLine();
+                        String result = admin.removeTeacherByID(ID);
+                        if (result == null) System.out.println("Teacher removed successfully!");
+                        else System.out.println(result);
+                        break;
+                }
+                System.out.println(CLEAR_SCREEN);
+                showAdminMenu(scanner, YELLOW);
             }
         }
 
@@ -104,6 +116,7 @@ public class CLI {
         System.out.println("14) extend deadline of project");
         System.out.println("15) activate assignment");
         System.out.println("16) activate project");
+        System.out.println("17) exit");
 
         return getAnInt(scanner, color);
     }
@@ -124,6 +137,7 @@ public class CLI {
         System.out.println("12) extend deadline of project");
         System.out.println("13) activate assignment");
         System.out.println("14) activate project");
+        System.out.println("15) exit");
         return getAnInt(scanner, color);
     }
 }

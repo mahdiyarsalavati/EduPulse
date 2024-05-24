@@ -112,4 +112,6 @@ public class Teacher extends Person {
     public String toString() {
         return "Teacher{First Name: " + getFirstName() + "Last Name: " + getLastName() + "ID: " + getID() + "Password: " + Arrays.toString(getPassword()) + "} \n";
     }
+
+
 }
