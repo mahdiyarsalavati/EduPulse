@@ -1,9 +1,12 @@
 import java.awt.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 
 public class CLI {
@@ -59,15 +62,45 @@ public class CLI {
                         } catch (IOException e) {
                             System.out.println(RED + "Failed to write to file");
                         }
-
                         break;
+
                     case 2:
                         System.out.println(YELLOW + "removing a teacher: ");
                         System.out.print("Username: ");
                         ID = scanner.nextLine();
                         String result = admin.removeTeacherByID(ID);
-                        if (result == null) System.out.println("Teacher removed successfully!");
+                        if (result == null) System.out.println(GREEN + "Teacher removed successfully!");
                         else System.out.println(result);
+
+                        // deleting teacher from teachers file
+                        if (result == null) {
+                            List<String> lines = new ArrayList<>();
+                            try {
+                                lines = Files.readAllLines(Paths.get("teachers.txt"));
+                            } catch (IOException e) {
+                                System.out.println(RED + "Failed to read from file: " + e.getMessage());
+                                break;
+                            }
+
+
+                            List<String> updatedLines = new ArrayList<>();
+                            boolean found = false;
+                            for (String line : lines) {
+                                if (line.contains(ID)) {
+                                    found = true;
+                                } else {
+                                    updatedLines.add(line);
+                                }
+                            }
+
+                            try (FileWriter writer = new FileWriter("teachers.txt", false)) {
+                                for (String line : updatedLines) {
+                                    writer.write(line + "\n");
+                                }
+                            } catch (IOException e) {
+                                System.out.println(RED + "Failed to write to file: " + e.getMessage());
+                            }
+                        }
                         break;
                 }
                 System.out.println(CLEAR_SCREEN);
