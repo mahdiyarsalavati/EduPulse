@@ -82,13 +82,10 @@ public class CLI {
                                 break;
                             }
 
-
                             List<String> updatedLines = new ArrayList<>();
                             boolean found = false;
                             for (String line : lines) {
-                                if (line.contains(ID)) {
-                                    found = true;
-                                } else {
+                                if (!line.contains(ID)) {
                                     updatedLines.add(line);
                                 }
                             }
@@ -101,6 +98,91 @@ public class CLI {
                                 System.out.println(RED + "Failed to write to file: " + e.getMessage());
                             }
                         }
+                        break;
+                    case 3:
+                        System.out.println(YELLOW + "adding a course: ");
+                        System.out.print("Name: ");
+                        String name = scanner.nextLine();
+
+                        System.out.print("Choose the teacher: ");
+                        List<String> lines = new ArrayList<>();
+                        try {
+                            lines = Files.readAllLines(Paths.get("teachers.txt"));
+                        } catch (IOException e) {
+                            System.out.println(RED + "Failed to read from file: " + e.getMessage());
+                            break;
+                        }
+                        int i = 1;
+                        for (String s : lines) {
+                            System.out.println(i + s.split(" ")[1] + " " + s.split(" ")[2] + " " + s.split(" ")[3]);
+                        }
+                        int chosenTeacherNum = scanner.nextInt();
+                        String chosenTeacherID = lines.get(chosenTeacherNum - 1).split(" ")[3].substring(3);
+                        Teacher chosenTeacher = admin.findTeacherByID(chosenTeacherID);
+
+                        System.out.print("Credit Unit: ");
+                        int creditUnit = scanner.nextInt();
+                        System.out.print("Is Available? 1) Yes 2) No");
+                        boolean isAvailable = scanner.nextInt() == 1;
+                        System.out.println("Exam Date: ");
+                        String examDate = scanner.nextLine();
+                        System.out.println("Semester: ");
+                        Semester semester = Semester.valueOf(scanner.nextLine().toUpperCase());
+                        System.out.println("ID: ");
+                        ID = scanner.nextLine();
+                        Course course = new Course(name, creditUnit, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), isAvailable, examDate, semester, chosenTeacher, ID);
+
+                        try (FileWriter writer = new FileWriter("courses.txt", true)) {
+                            writer.write(course.toString() + "\n");
+                            System.out.println(GREEN + "Course added successfully!");
+                        } catch (IOException e) {
+                            System.out.println(RED + "Failed to write to file");
+                        }
+
+                        admin.addCourse(course);
+                        chosenTeacher.addCourse(course);
+                        break;
+
+                    case 4:
+                        System.out.println(YELLOW + "removing a course: ");
+                        System.out.print("ID: ");
+                        ID = scanner.nextLine();
+                        result = admin.removeCourseByID(ID);
+                        if (result == null) System.out.println(GREEN + "Course removed successfully!");
+                        else System.out.println(result);
+
+                        // deleting course from teachers file
+                        if (result == null) {
+                            lines = new ArrayList<>();
+                            try {
+                                lines = Files.readAllLines(Paths.get("courses.txt"));
+                            } catch (IOException e) {
+                                System.out.println(RED + "Failed to read from file: " + e.getMessage());
+                                break;
+                            }
+
+                            List<String> updatedLines = new ArrayList<>();
+                            boolean found = false;
+                            for (String line : lines) {
+                                if (!line.contains(ID)) {
+                                    updatedLines.add(line);
+                                }
+                            }
+
+                            try (FileWriter writer = new FileWriter("courses.txt", false)) {
+                                for (String line : updatedLines) {
+                                    writer.write(line + "\n");
+                                }
+                            } catch (IOException e) {
+                                System.out.println(RED + "Failed to write to file: " + e.getMessage());
+                            }
+                        }
+
+                        break;
+
+                    case 5:
+                        System.out.println(YELLOW + "adding a student: ");
+
                         break;
                 }
                 System.out.println(CLEAR_SCREEN);

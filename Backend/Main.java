@@ -3,17 +3,17 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        Teacher teacher = new Teacher("Bob", "Anderson", new ArrayList<>(), "402243010","1234".toCharArray());
+        Teacher teacher = new Teacher("Bob", "Anderson", new ArrayList<>(), "402243010", "1234".toCharArray());
 
         Student student1 = new Student("Ali", "Alavi", new ArrayList<>(), "1234".toCharArray(), "402243104", Semester.SECOND);
-        Student student2 = new Student("Taghi", "Taghavi", new ArrayList<>(),"1234".toCharArray(),  "402243001", Semester.FIRST);
+        Student student2 = new Student("Taghi", "Taghavi", new ArrayList<>(), "1234".toCharArray(), "402243001", Semester.FIRST);
 
         List<Student> students = new ArrayList<>();
         students.add(student1);
         students.add(student2);
 
-        Course course1 = new Course("Math", "Bob Anderson", 3, students, new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, teacher);
-        Course course2 = new Course("English", "Bob Anderson", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.SECOND, teacher);
+        Course course1 = new Course("Math", 3, students, new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, teacher, "4021");
+        Course course2 = new Course("English", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.SECOND, teacher, "4021");
 
         teacher.addCourse(course1);
         teacher.addCourse(course2);
@@ -33,7 +33,7 @@ public class Main {
         teacher.addProject(course2, project2);
 
         teacher.gradeStudent(course1, student1, 18.5);
-        teacher.gradeStudent(course1,student2,17);
+        teacher.gradeStudent(course1, student2, 17);
         teacher.gradeStudent(course2, student1, 20);
 
         student1.printCourses();

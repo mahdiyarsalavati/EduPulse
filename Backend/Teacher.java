@@ -107,10 +107,9 @@ public class Teacher extends Person {
         project.setAvailable(isAvailable);
     }
 
-
     @Override
     public String toString() {
-        return "Teacher{First Name: " + getFirstName() + "Last Name: " + getLastName() + "ID: " + getID() + "Password: " + Arrays.toString(getPassword()) + "} \n";
+        return "Teacher{ FirstName=" + getFirstName().replaceAll(" ", "") + " LastName=" + getLastName().replaceAll(" ", "") + " ID=" + getID().replaceAll(" ", "") + " Password=" + Arrays.toString(getPassword()) + "} \n";
     }
 
 

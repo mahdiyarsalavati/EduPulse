@@ -4,7 +4,6 @@ import java.util.Objects;
 
 public class Course {
     private String name;
-    private String profName;
     private Teacher teacher;
     private int creditUnit;
     private List<StudentItem> studentItems = new ArrayList<>();
@@ -16,15 +15,16 @@ public class Course {
     private boolean isAvailable;
     private String examDate;
     private Semester semester;
+    private String ID;
 
-    public Course(String name, String profName, int creditUnit, List<Student> studentItems, List<Project> projects, List<Assignment> assignments, boolean isAvailable, String examDate, Semester semester, Teacher teacher) {
+    public Course(String name, int creditUnit, List<Student> studentItems, List<Project> projects, List<Assignment> assignments, boolean isAvailable, String examDate, Semester semester, Teacher teacher, String ID) {
         this.name = name;
-        this.profName = profName;
         this.creditUnit = creditUnit;
         this.isAvailable = isAvailable;
         this.examDate = examDate;
         this.semester = semester;
         this.teacher = teacher;
+        this.ID = ID;
 
         for (Student student : studentItems) {
             this.addStudent(student);
@@ -49,10 +49,6 @@ public class Course {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public void setProfName(String profName) {
-        this.profName = profName;
     }
 
     public Teacher getTeacher() {
@@ -95,9 +91,6 @@ public class Course {
         return name;
     }
 
-    public String getProfName() {
-        return profName;
-    }
 
     public int getCreditUnit() {
         return creditUnit;
@@ -265,17 +258,25 @@ public class Course {
         return 0;
     }
 
+    public String getID() {
+        return ID;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Course course = (Course) o;
-        return creditUnit == course.creditUnit && Objects.equals(name, course.name) && Objects.equals(teacher, course.teacher);
+        return Objects.equals(ID, course.ID);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, teacher, creditUnit);
+        return Objects.hash(ID);
+    }
+
+    @Override
+    public String toString() {
+        return "Course{" + " creditUnit=" + creditUnit + " ID=" + ID + "}";
     }
 }

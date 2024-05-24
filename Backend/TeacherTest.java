@@ -14,9 +14,9 @@ public class TeacherTest {
 
     @BeforeEach
     void setup() {
-        teacher = new Teacher("Bob", "Anderson", new ArrayList<>(), "402243010","1234".toCharArray());
-        course1 = new Course("Test Course1", "Test Prof", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.SECOND, teacher);
-        course2 = new Course("Test Course2", "Test Prof", 4, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-02", Semester.SECOND, teacher);
+        teacher = new Teacher("Bob", "Anderson", new ArrayList<>(), "402243010", "1234".toCharArray());
+        course1 = new Course("Test Course1", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.SECOND, teacher, "4021");
+        course2 = new Course("Test Course2", 4, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-02", Semester.SECOND, teacher, "4022");
         teacher.addCourse(course1);
         teacher.addCourse(course2);
         student1 = new Student("Test", "Student1", new ArrayList<>(), "1234".toCharArray(), "402243104", Semester.SECOND);
