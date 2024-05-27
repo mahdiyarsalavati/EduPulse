@@ -1,0 +1,1 @@
+Teacher{ FirstName=Ali LastName=Alavi ID=402243000 Password=[@, U, l, t, r, a, 2, 0, 2, 3]}
