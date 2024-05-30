@@ -27,6 +27,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   String _avatarUrl = '';
   late String _firstName;
   late String _lastName;
+  final ImagePicker _picker = ImagePicker();
 
   final TextEditingController _averageGradeController =
       TextEditingController(text: '۱۸.۶۴');
@@ -34,8 +35,6 @@ class _UserInfoPageState extends State<UserInfoPage> {
       TextEditingController(text: 'بهار ۱۴۰۲ - ۱۴۰۳');
   final TextEditingController _creditUnitController =
       TextEditingController(text: '۱۶');
-
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -48,7 +47,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
-        _avatarUrl = pickedFile.path;
+        _avatarUrl =
+            pickedFile.path; // Setting the image path to the state variable
       });
     }
   }
@@ -74,24 +74,18 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
   void _changePassword() {
     Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ChangePasswordPage()),
-    );
+        context, MaterialPageRoute(builder: (context) => ChangePasswordPage()));
   }
 
   void _removeAccount() {
     Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => RemoveAccountPage()),
-    );
+        context, MaterialPageRoute(builder: (context) => RemoveAccountPage()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('اطلاعات کاربر'),
-      ),
+      appBar: AppBar(title: Text('اطلاعات کاربر')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -102,19 +96,15 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 final action = await showDialog<String>(
                   context: context,
                   builder: (BuildContext context) => AlertDialog(
-                    title: const Text(
-                      'یک گزینه را انتخاب کنید',
-                      textAlign: TextAlign.center,
-                    ),
+                    title: const Text('یک گزینه را انتخاب کنید',
+                        textAlign: TextAlign.center),
                     actions: <Widget>[
                       TextButton(
-                        onPressed: () => Navigator.pop(context, 'Gallery'),
-                        child: const Text('گالری'),
-                      ),
+                          onPressed: () => Navigator.pop(context, 'Gallery'),
+                          child: const Text('گالری')),
                       TextButton(
-                        onPressed: () => Navigator.pop(context, 'Camera'),
-                        child: const Text('دوربین'),
-                      ),
+                          onPressed: () => Navigator.pop(context, 'Camera'),
+                          child: const Text('دوربین')),
                     ],
                   ),
                 );
@@ -140,11 +130,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
               ),
             ),
             SizedBox(height: 10),
-            Text(
-              '$_firstName $_lastName',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
+            Text('$_firstName $_lastName',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
             Expanded(
               child: Directionality(
@@ -165,34 +153,23 @@ class _UserInfoPageState extends State<UserInfoPage> {
               onPressed: _editInfo,
               icon: Icon(CupertinoIcons.pencil),
               label: Text('ویرایش مشخصات'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(1000, 56),
-              ),
+              style: ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
             ),
             SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: _changePassword,
               icon: Icon(CupertinoIcons.lock),
               label: Text('ویرایش رمز عبور'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(1000, 56),
-              ),
+              style: ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
             ),
             SizedBox(height: 10),
             ElevatedButton.icon(
               onPressed: _removeAccount,
-              icon: Icon(
-                CupertinoIcons.trash,
-                color: Colors.white,
-              ),
-              label: Text(
-                'حذف حساب کاربری',
-                style: TextStyle(color: Colors.white),
-              ),
+              icon: Icon(CupertinoIcons.trash, color: Colors.white),
+              label: Text('حذف حساب کاربری',
+                  style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                minimumSize: Size(1000, 56),
-              ),
+                  backgroundColor: Colors.red, minimumSize: Size(1000, 56)),
             ),
           ],
         ),
@@ -206,14 +183,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-          Text(
-            value,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-          ),
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+          Text(value,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
         ],
       ),
     );

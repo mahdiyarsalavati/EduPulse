@@ -1,20 +1,20 @@
+import 'package:EDUPULSE/screens/onboding/welcomePage.dart';
 import 'package:flutter/material.dart';
-import 'package:rive_animation/screens/onboding/welcomePage.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const EDUPULSE());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  
+class EDUPULSE extends StatelessWidget {
+  const EDUPULSE({super.key});
+
+  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'The Flutter Way',
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFEEF1F8),
         primarySwatch: Colors.blue,
         fontFamily: "IRANSansX",
         textTheme: TextTheme(
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
           errorBorder: defaultInputBorder,
         ),
       ),
-      home: const OnboardingScreen(),
+      home: const WelcomePage(),
     );
   }
 }

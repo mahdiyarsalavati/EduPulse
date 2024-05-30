@@ -9,7 +9,7 @@ class RemoveAccountPage extends StatelessWidget {
   void _removeAccount(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => OnboardingScreen()),
+      MaterialPageRoute(builder: (context) => WelcomePage()),
     );
   }
 
