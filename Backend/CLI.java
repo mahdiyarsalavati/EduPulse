@@ -21,8 +21,10 @@ public class CLI {
     private static final String CLEAR_SCREEN = "\033[H\033[2J";
     private static final String TEACHERS_FILE = "Backend/assets/teachers.txt";
     private static final String STUDENTS_FILE = "Backend/assets/students.txt";
+    private static final String COURSES_FILE = "Backend/assets/courses.txt";
     private static List<Teacher> teachers = new ArrayList<>();
     private static List<Student> students = new ArrayList<>();
+    private static List<Course> courses = new ArrayList<>();
 
     static {
         loadTeachers();
@@ -31,15 +33,94 @@ public class CLI {
 
     private static void loadTeachers() {
         Path teachersPath = Paths.get(TEACHERS_FILE);
+        List<String> teachersDetails = new ArrayList<>();
         try {
-            List<String> teachersDetails = Files.readAllLines(teachersPath);
+            teachersDetails = Files.readAllLines(teachersPath);
         } catch (IOException io) {
         }
-
-
+        for (String s : teachersDetails) {
+            String[] details = s.split(",");
+            String firstName = details[0];
+            String lastName = details[1];
+            String coursesIDs1 = details[2].replace("[", "");
+            coursesIDs1 = coursesIDs1.replace("]", "");
+            String[] coursesIDs = coursesIDs1.split(",");
+            List<Course> teacherCourses = new ArrayList<>();
+            loadCourses();
+            for (String cid : coursesIDs) {
+                for (Course course : courses) {
+                    if (course.getID().equals(cid)) {
+                        teacherCourses.add(course);
+                    }
+                }
+            }
+            String ID = details[3];
+            String password = details[4];
+            Teacher teacher = new Teacher(firstName, lastName, teacherCourses, ID, password.toCharArray());
+            teachers.add(teacher);
+        }
     }
 
     private static void loadStudents() {
+        Path studentsPath = Paths.get(STUDENTS_FILE);
+        List<String> studentsDetails = new ArrayList<>();
+        try {
+            studentsDetails = Files.readAllLines(studentsPath);
+        } catch (IOException io) {
+        }
+        for (String s : studentsDetails) {
+            String[] details = s.split(",");
+            String firstName = details[0];
+            String lastName = details[1];
+            String coursesIDs1 = details[2].replace("[", "");
+            coursesIDs1 = coursesIDs1.replace("]", "");
+            String[] coursesIDs = coursesIDs1.split(",");
+            List<Course> studentCourses = new ArrayList<>();
+            for (String cid : coursesIDs) {
+                for (Course course : courses) {
+                    if (course.getID().equals(cid)) {
+                        studentCourses.add(course);
+                    }
+                }
+            }
+            String password = details[3];
+            String ID = details[4];
+            String semester = details[5];
+            Student student = new Student(firstName, lastName, studentCourses, password.toCharArray(), ID, Semester.valueOf(semester));
+            students.add(student);
+        }
+    }
+
+    private static void loadCourses() {
+        Path coursesPath = Paths.get(COURSES_FILE);
+        List<String> coursesDetails = new ArrayList<>();
+        try {
+            coursesDetails = Files.readAllLines(coursesPath);
+        } catch (IOException io) {
+        }
+        for (String s : coursesDetails) {
+            String[] details = s.split(",");
+            String name = details[0];
+            Integer creditUnit = Integer.parseInt(details[1]);
+            /////////
+            String coursesIDs1 = details[2].replace("[", "");
+            coursesIDs1 = coursesIDs1.replace("]", "");
+            String[] coursesIDs = coursesIDs1.split(",");
+            List<Course> studentCourses = new ArrayList<>();
+            for (String cid : coursesIDs) {
+                for (Course course : courses) {
+                    if (course.getID().equals(cid)) {
+                        studentCourses.add(course);
+                    }
+                }
+            }
+            String password = details[3];
+            String ID = details[4];
+            String semester = details[5];
+            Student student = new Student(firstName, lastName, studentCourses, password.toCharArray(), ID, Semester.valueOf(semester));
+            students.add(student);
+        }
+
     }
 
 
