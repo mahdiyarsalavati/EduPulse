@@ -1,6 +1,6 @@
-import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -19,6 +19,29 @@ public class CLI {
     private static final String CYAN = "\u001B[36m";
     private static final String WHITE = "\u001B[37m";
     private static final String CLEAR_SCREEN = "\033[H\033[2J";
+    private static final String TEACHERS_FILE = "Backend/assets/teachers.txt";
+    private static final String STUDENTS_FILE = "Backend/assets/students.txt";
+    private static List<Teacher> teachers = new ArrayList<>();
+    private static List<Student> students = new ArrayList<>();
+
+    static {
+        loadTeachers();
+        loadStudents();
+    }
+
+    private static void loadTeachers() {
+        Path teachersPath = Paths.get(TEACHERS_FILE);
+        try {
+            List<String> teachersDetails = Files.readAllLines(teachersPath);
+        } catch (IOException io) {
+        }
+
+
+    }
+
+    private static void loadStudents() {
+    }
+
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);

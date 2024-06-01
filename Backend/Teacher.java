@@ -1,5 +1,4 @@
 import java.util.List;
-import java.util.Arrays;
 
 public class Teacher extends Person {
 
@@ -86,9 +85,18 @@ public class Teacher extends Person {
 
     @Override
     public String toString() {
-        return "Teacher{ FirstName=" + getFirstName().replaceAll(" ", "") +
-                " LastName=" + getLastName().replaceAll(" ", "") +
-                " ID=" + getID().replaceAll(" ", "") +
-                " Password=" + Arrays.toString(getPassword()) + "}";
+        String coursesIDs = "[";
+        for (int i = 0; i < getCourses().size(); i++) {
+            coursesIDs += getCourses().get(i).getID();
+            if (i != getCourses().size() - 1) {
+                coursesIDs += ",";
+            }
+        }
+        coursesIDs += "]";
+        StringBuilder password = new StringBuilder();
+        for (char c : getPassword()) {
+            password.append(c);
+        }
+        return getFirstName() + "," + getLastName() + "," + coursesIDs + "," + getID() + "," + password;
     }
 }

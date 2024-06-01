@@ -82,11 +82,6 @@ public class Assignment implements Serializable {
 
     @Override
     public String toString() {
-        return "Assignment{" +
-                "ID='" + ID + '\'' +
-                ", deadline=" + deadline +
-                ", isAvailable=" + isAvailable +
-                ", course=" + course.getName() +
-                '}';
+        return deadline + "," + isAvailable + "," + course.getID() + "," + getID();
     }
 }

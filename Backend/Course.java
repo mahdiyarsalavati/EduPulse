@@ -261,10 +261,33 @@ public class Course implements Serializable {
 
     @Override
     public String toString() {
-        return "Course{" +
-                "Name='" + name + '\'' +
-                ", creditUnit=" + creditUnit +
-                ", ID='" + ID + '\'' +
-                '}';
+        String studentsIDs = "[";
+        for (int i = 0; i < getStudentItems().size(); i++) {
+            studentsIDs += getStudentItems().get(i).getStudent().getID();
+            if (i != getStudentItems().size() - 1) {
+                studentsIDs += ",";
+            }
+        }
+        studentsIDs += "]";
+
+        String assignmentsIDs = "[";
+        for (int i = 0; i < getAssignments().size(); i++) {
+            assignmentsIDs += getAssignments().get(i).getID();
+            if (i != getAssignments().size() - 1) {
+                assignmentsIDs += ",";
+            }
+        }
+        assignmentsIDs += "]";
+
+        String projectsIDs = "[";
+        for (int i = 0; i < getProjects().size(); i++) {
+            projectsIDs += getProjects().get(i).getID();
+            if (i != getProjects().size() - 1) {
+                projectsIDs += ",";
+            }
+        }
+        projectsIDs += "]";
+
+        return name + "," + creditUnit + "," + studentsIDs + "," + projectsIDs + "," + assignmentsIDs + "," + isAvailable + "," + examDate + "," + semester + "," + teacher.getID() + "," + getID();
     }
 }

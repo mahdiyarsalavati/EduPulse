@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -115,10 +114,18 @@ public class Student extends Person {
 
     @Override
     public String toString() {
-        return "Student{" +
-                "semester=" + semester +
-                ", ID='" + getID() + '\'' +
-                ", password=" + Arrays.toString(getPassword()) +
-                '}';
+        String coursesIDs = "[";
+        for (int i = 0; i < getCourses().size(); i++) {
+            coursesIDs += getCourses().get(i).getID();
+            if (i != getCourses().size() - 1) {
+                coursesIDs += ",";
+            }
+        }
+        coursesIDs += "]";
+        StringBuilder password = new StringBuilder();
+        for (char c : getPassword()) {
+            password.append(c);
+        }
+        return getFirstName() + "," + getLastName() + "," + coursesIDs + "," + password + "," + semester;
     }
 }
