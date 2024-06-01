@@ -1,6 +1,5 @@
-import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Arrays;
 
 public class Teacher extends Person {
 
@@ -9,58 +8,31 @@ public class Teacher extends Person {
     }
 
     public void addAssignment(Course course, Assignment assignment) {
-        if (!getCourses().contains(course))
+        if (course == null || !getCourses().contains(course)) {
             throw new IllegalArgumentException("Course could not be found (for this teacher)!");
-        else {
-            for (Course c : getCourses()) {
-                if (c.equals(course)) {
-                    c.addAssignment(assignment);
-                    return;
-                }
-            }
         }
+        course.addAssignment(assignment);
     }
 
     public void removeAssignment(Course course, Assignment assignment) {
-        if (!getCourses().contains(course))
+        if (course == null || !getCourses().contains(course)) {
             throw new IllegalArgumentException("Course could not be found (for this teacher)!");
-        else {
-            for (Course c : getCourses()) {
-                if (c.equals(course)) {
-                    if (c.getAssignments().contains(assignment)) {
-                        c.removeAssignment(assignment);
-                    }
-                    return;
-                }
-            }
         }
+        course.removeAssignment(assignment);
     }
 
     public void addProject(Course course, Project project) {
-        if (!getCourses().contains(course))
+        if (course == null || !getCourses().contains(course)) {
             throw new IllegalArgumentException("Course could not be found (for this teacher)!");
-        else {
-            for (Course c : getCourses()) {
-                if (c.equals(course)) {
-                    c.addProject(project);
-                }
-            }
         }
+        course.addProject(project);
     }
 
     public void removeProject(Course course, Project project) {
-        if (!getCourses().contains(course))
+        if (course == null || !getCourses().contains(course)) {
             throw new IllegalArgumentException("Course could not be found (for this teacher)!");
-        else {
-            for (Course c : getCourses()) {
-                if (c.equals(course)) {
-                    if (c.getProjects().contains(project)) {
-                        c.removeProject(project);
-                    }
-                    return;
-                }
-            }
         }
+        course.removeProject(project);
     }
 
     public void addStudent(Course course, Student student) {
@@ -76,40 +48,47 @@ public class Teacher extends Person {
     }
 
     public void rewardStudent(Course course, Student student, Number reward) {
-        course.gradeStudent(student, course.getGrade(student) + reward.doubleValue());
-    }
-
-    public void gradeStudent(Course course, Student student, Number grade) {
-        if (!getCourses().contains(course))
-            throw new IllegalArgumentException("Course could not be found (for this teacher)!");
-        else {
-            for (Course c : getCourses()) {
-                if (c.equals(course)) {
-                    c.gradeStudent(student, grade);
-                    return;
-                }
-            }
+        if (course != null) {
+            course.gradeStudent(student, course.getGrade(student) + reward.doubleValue());
         }
     }
 
+    public void gradeStudent(Course course, Student student, Number grade) {
+        if (course == null || !getCourses().contains(course)) {
+            throw new IllegalArgumentException("Course could not be found (for this teacher)!");
+        }
+        course.gradeStudent(student, grade.doubleValue());
+    }
+
     public void extendDeadline(Assignment assignment, int days) {
-        assignment.extendDeadlineByDays(days);
+        if (assignment != null) {
+            assignment.extendDeadlineByDays(days);
+        }
     }
 
     public void extendDeadline(Project project, int days) {
-        project.extendDeadlineByDays(days);
+        if (project != null) {
+            project.extendDeadlineByDays(days);
+        }
     }
 
-    public void activeAssignment(Assignment assignment, boolean isAvailable) {
-        assignment.setAvailable(isAvailable);
+    public void activateAssignment(Assignment assignment, boolean isAvailable) {
+        if (assignment != null) {
+            assignment.setAvailable(isAvailable);
+        }
     }
 
-    public void activeProject(Project project, boolean isAvailable) {
-        project.setAvailable(isAvailable);
+    public void activateProject(Project project, boolean isAvailable) {
+        if (project != null) {
+            project.setAvailable(isAvailable);
+        }
     }
 
     @Override
     public String toString() {
-        return "Teacher{ FirstName=" + getFirstName().replaceAll(" ", "") + " LastName=" + getLastName().replaceAll(" ", "") + " ID=" + getID().replaceAll(" ", "") + " Password=" + Arrays.toString(getPassword()) + "} \n";
+        return "Teacher{ FirstName=" + getFirstName().replaceAll(" ", "") +
+                " LastName=" + getLastName().replaceAll(" ", "") +
+                " ID=" + getID().replaceAll(" ", "") +
+                " Password=" + Arrays.toString(getPassword()) + "}";
     }
 }

@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.List;
 
-public class Person {
+public class Person implements Serializable {
     private String firstName;
     private String lastName;
     private List<Course> courses;
@@ -8,20 +9,11 @@ public class Person {
     private String ID;
     private char[] password;
 
-    public char[] getPassword() {
-        return password;
-    }
-
-    public void setPassword(char[] password) {
-        this.password = password;
-    }
-
     public Person(String firstName, String lastName, List<Course> courses, String ID, char[] password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.courses = courses;
-        if (courses == null) this.coursesLength = 0;
-        else this.coursesLength = courses.size();
+        this.coursesLength = (courses == null) ? 0 : courses.size();
         this.password = password;
         this.ID = ID;
     }
@@ -47,22 +39,19 @@ public class Person {
     }
 
     public void setCourses(List<Course> courses) {
-        this.coursesLength = courses.size();
         this.courses = courses;
+        this.coursesLength = (courses == null) ? 0 : courses.size();
     }
 
     public void addCourse(Course course) {
-        if (course != null) courses.add(course);
+        courses.add(course);
         this.coursesLength++;
     }
 
     public void removeCourse(Course course) {
-        if (!courses.contains(course)) return;
-        courses.remove(course);
-        for (StudentItem st : course.getStudentItems()) {
-            st.getStudent().removeCourse(course);
+        if (courses.remove(course)) {
+            this.coursesLength--;
         }
-        this.coursesLength--;
     }
 
     public int getCoursesLength() {
@@ -75,5 +64,23 @@ public class Person {
 
     public void setID(String ID) {
         this.ID = ID;
+    }
+
+    public char[] getPassword() {
+        return password;
+    }
+
+    public void setPassword(char[] password) {
+        this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", coursesLength=" + coursesLength +
+                ", ID='" + ID + '\'' +
+                '}';
     }
 }

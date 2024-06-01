@@ -3,36 +3,39 @@ import java.util.List;
 import java.util.Objects;
 
 public class Student extends Person {
-    private int creditUnits = 0;
-    private double averageGrade = 0.0;
-    private double semesterGrade = 0.0;
+    private int creditUnits;
+    private double averageGrade;
+    private double semesterGrade;
     private Semester semester;
-
 
     public Student(String firstName, String lastName, List<Course> courses, char[] password, String id, Semester semester) {
         super(firstName, lastName, courses, id, password);
-        for (Course course : courses) {
-            this.creditUnits += course.getCreditUnit();
-        }
         this.semester = semester;
+        updateCreditUnits();
         updateAverageGrade();
         updateSemesterGrade();
     }
 
+    public Semester getSemester() {
+        return semester;
+    }
+
     public void setSemester(Semester semester) {
         this.semester = semester;
+        updateSemesterGrade();
     }
 
     public int getCreditUnits() {
-        this.creditUnits = 0;
-        for (Course course : getCourses()) {
-            this.creditUnits += course.getCreditUnit();
-        }
-        return creditUnits;
+        int result = getCourses().stream().map(x -> x.getCreditUnit()).reduce((a, b) -> a + b).orElse(0);
+        return result;
     }
 
-    public void addCreditUnit(int cu) {
-        this.creditUnits += cu;
+    public void addCreditUnit(int creditUnits) {
+        this.creditUnits += creditUnits;
+    }
+
+    private void updateCreditUnits() {
+        this.creditUnits = getCourses().stream().mapToInt(Course::getCreditUnit).sum();
     }
 
     public double getAverageGrade() {
@@ -45,65 +48,56 @@ public class Student extends Person {
         return semesterGrade;
     }
 
-
-    public Semester getSemester() {
-        return semester;
-    }
-
     private void updateAverageGrade() {
         if (getCourses().isEmpty()) {
-            averageGrade = 0;
+            this.averageGrade = 0;
             return;
         }
-        double result = 0.0;
-        int numberOfCredits = 0;
+        double totalGrade = 0;
+        int totalCredits = 0;
         for (Course course : getCourses()) {
-            result += course.getGrade(this) * course.getCreditUnit();
-            numberOfCredits += course.getCreditUnit();
+            totalGrade += course.getGrade(this) * course.getCreditUnit();
+            totalCredits += course.getCreditUnit();
         }
-        result /= numberOfCredits;
-        averageGrade = result;
+        this.averageGrade = totalGrade / totalCredits;
     }
 
     private void updateSemesterGrade() {
         if (getCourses().isEmpty()) {
-            semesterGrade = 0;
+            this.semesterGrade = 0;
             return;
         }
-        double result = 0.0;
-        int semesterCredit = 0;
+        double totalGrade = 0;
+        int semesterCredits = 0;
         for (Course course : getCourses()) {
             if (course.getSemester() == this.semester) {
-                result += course.getGrade(this) * course.getCreditUnit();
-                semesterCredit += course.getCreditUnit();
+                totalGrade += course.getGrade(this) * course.getCreditUnit();
+                semesterCredits += course.getCreditUnit();
             }
         }
-        result /= semesterCredit;
-        semesterGrade = result;
+        this.semesterGrade = totalGrade / semesterCredits;
     }
 
     public void printCourses() {
         if (getCourses().isEmpty()) {
-            System.out.println("There is no courses");
+            System.out.println("There are no courses.");
             return;
         }
         System.out.println(this.getFirstName() + " " + this.getLastName() + "'s courses:");
         int i = 1;
         for (Course course : getCourses()) {
-            System.out.println(i + ": Course's Name: " + course.getName() + " (" + course.getSemester() + " SEMESTER) " + " - Credit Unit: " + course.getCreditUnit() + " - Grade: " + course.getGrade(this));
+            System.out.println(i + ": Course's Name: " + course.getName() + " (" + course.getSemester() + " SEMESTER) - Credit Unit: " + course.getCreditUnit() + " - Grade: " + course.getGrade(this));
             i++;
         }
         System.out.println("------------------");
     }
 
     public void printAverageGrade() {
-        updateAverageGrade();
-        System.out.println(getFirstName() + " " + getLastName() + "'s average grade is " + averageGrade);
+        System.out.println(getFirstName() + " " + getLastName() + "'s average grade is " + getAverageGrade());
     }
 
     public void printCreditUnits() {
-        int cu = getCreditUnits();
-        System.out.println(getFirstName() + " " + getLastName() + "'s total credit units is " + cu);
+        System.out.println(getFirstName() + " " + getLastName() + "'s total credit units are " + getCreditUnits());
     }
 
     @Override
@@ -111,7 +105,7 @@ public class Student extends Person {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Student student = (Student) o;
-        return Objects.equals(getID(), student.getID());
+        return getID().equals(student.getID());
     }
 
     @Override
@@ -121,6 +115,10 @@ public class Student extends Person {
 
     @Override
     public String toString() {
-        return "Student{" + " semester=" + semester + " ID=" + getID() + "}" + " password=" + Arrays.toString(getPassword()) + "}";
+        return "Student{" +
+                "semester=" + semester +
+                ", ID='" + getID() + '\'' +
+                ", password=" + Arrays.toString(getPassword()) +
+                '}';
     }
 }

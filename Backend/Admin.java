@@ -175,4 +175,11 @@ public class Admin extends Teacher {
         return result;
     }
 
+    public List<Assignment> getAssignments() {
+        return assignments;
+    }
+
+    public List<Project> getProjects() {
+        return projects;
+    }
 }

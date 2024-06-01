@@ -1,23 +1,21 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Course {
+public class Course implements Serializable {
     private String name;
     private Teacher teacher;
     private int creditUnit;
     private List<StudentItem> studentItems = new ArrayList<>();
     private List<Project> projects = new ArrayList<>();
     private List<Assignment> assignments = new ArrayList<>();
-    private int studentItemsLength = 0;
-    private int projectsLength = 0;
-    private int assignmentsLength = 0;
     private boolean isAvailable;
     private String examDate;
     private Semester semester;
     private String ID;
 
-    public Course(String name, int creditUnit, List<Student> studentItems, List<Project> projects, List<Assignment> assignments, boolean isAvailable, String examDate, Semester semester, Teacher teacher, String ID) {
+    public Course(String name, int creditUnit, List<Student> students, List<Project> projects, List<Assignment> assignments, boolean isAvailable, String examDate, Semester semester, Teacher teacher, String ID) {
         this.name = name;
         this.creditUnit = creditUnit;
         this.isAvailable = isAvailable;
@@ -26,25 +24,27 @@ public class Course {
         this.teacher = teacher;
         this.ID = ID;
 
-        for (Student student : studentItems) {
-            this.addStudent(student);
-            this.studentItemsLength++;
-        }
-
-        for (Assignment assignment : assignments) {
-            if (assignment.getCourse().getName().equals(this.name)) {
-                this.assignments.add(assignment);
-                this.assignmentsLength++;
+        if (students != null) {
+            for (Student student : students) {
+                this.addStudent(student);
             }
         }
 
-
-        for (Project project : projects) {
-            if (project.getCourse().getName().equals(this.name)) {
-                this.projects.add(project);
-                this.projectsLength++;
+        if (projects != null) {
+            for (Project project : projects) {
+                this.addProject(project);
             }
         }
+
+        if (assignments != null) {
+            for (Assignment assignment : assignments) {
+                this.addAssignment(assignment);
+            }
+        }
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setName(String name) {
@@ -59,84 +59,78 @@ public class Course {
         this.teacher = teacher;
     }
 
-    public void setCreditUnit(int creditUnit) {
-        this.creditUnit = creditUnit;
-    }
-
-    public void setStudentItems(List<StudentItem> studentItems) {
-        this.studentItems = studentItems;
-    }
-
-    public void setProjects(List<Project> projects) {
-        this.projects = projects;
-    }
-
-    public void setAssignments(List<Assignment> assignments) {
-        this.assignments = assignments;
-    }
-
-    public void setAvailable(boolean available) {
-        isAvailable = available;
-    }
-
-    public void setExamDate(String examDate) {
-        this.examDate = examDate;
-    }
-
-    public void setSemester(Semester semester) {
-        this.semester = semester;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-
     public int getCreditUnit() {
         return creditUnit;
+    }
+
+    public void setCreditUnit(int creditUnit) {
+        this.creditUnit = creditUnit;
     }
 
     public List<StudentItem> getStudentItems() {
         return studentItems;
     }
 
+    public void setStudentItems(List<StudentItem> studentItems) {
+        this.studentItems = studentItems;
+    }
+
     public List<Project> getProjects() {
         return projects;
+    }
+
+    public void setProjects(List<Project> projects) {
+        this.projects = projects;
     }
 
     public List<Assignment> getAssignments() {
         return assignments;
     }
 
-    public int getStudentItemsLength() {
-        return studentItemsLength;
-    }
-
-    public int getProjectsLength() {
-        return projectsLength;
-    }
-
     public int getAssignmentsLength() {
-        return assignmentsLength;
+        return assignments.size();
+    }
+
+    public void setAssignments(List<Assignment> assignments) {
+        this.assignments = assignments;
+    }
+
+    public int getStudentItemsLength() {
+        return studentItems.size();
     }
 
     public boolean isAvailable() {
         return isAvailable;
     }
 
+    public void setAvailable(boolean available) {
+        isAvailable = available;
+    }
+
     public String getExamDate() {
         return examDate;
+    }
+
+    public void setExamDate(String examDate) {
+        this.examDate = examDate;
     }
 
     public Semester getSemester() {
         return semester;
     }
 
+    public void setSemester(Semester semester) {
+        this.semester = semester;
+    }
+
+    public String getID() {
+        return ID;
+    }
+
     public void addStudent(Student student) {
         if (student != null) {
             StudentItem st = new StudentItem(student);
             studentItems.add(st);
-            studentItemsLength++;
             student.addCourse(this);
             student.addCreditUnit(this.creditUnit);
         }
@@ -146,66 +140,59 @@ public class Course {
         if (student != null) {
             StudentItem st = new StudentItem(student, grade);
             studentItems.add(st);
-            studentItemsLength++;
             student.addCourse(this);
             student.addCreditUnit(this.creditUnit);
         }
     }
 
     public void removeStudent(Student student) {
-        boolean wasFound = false;
         StudentItem toRemove = null;
         for (StudentItem si : studentItems) {
             if (si.getStudent().equals(student)) {
-                wasFound = true;
                 toRemove = si;
                 break;
             }
         }
-        if (wasFound) {
+        if (toRemove != null) {
             studentItems.remove(toRemove);
-            studentItemsLength--;
             student.removeCourse(this);
-            student.addCreditUnit(-1 * this.creditUnit);
+            student.addCreditUnit(-this.creditUnit);
         } else {
             throw new IllegalArgumentException("Student could not be found!");
         }
     }
 
-
     public void addAssignment(Assignment assignment) {
         if (assignment.getCourse().equals(this)) {
             assignments.add(assignment);
-            assignmentsLength++;
         }
     }
 
     public void removeAssignment(Assignment assignment) {
-        if (!assignments.contains(assignment)) throw new IllegalArgumentException("Assignment could not be found!");
-        else {
-            assignments.remove(assignment);
-            assignmentsLength--;
+        if (assignments.remove(assignment)) {
+            return;
+        } else {
+            throw new IllegalArgumentException("Assignment could not be found!");
         }
     }
 
     public void addProject(Project project) {
         if (project.getCourse().equals(this)) {
             projects.add(project);
-            projectsLength++;
         }
     }
 
     public void removeProject(Project project) {
-        if (!projects.contains(project)) throw new IllegalArgumentException("Project could not be found!");
-        else {
-            projects.remove(project);
-            projectsLength--;
+        if (projects.remove(project)) {
+            return;
+        } else {
+            throw new IllegalArgumentException("Project could not be found!");
         }
     }
 
     public void printStudents() {
-        if (studentItemsLength == 0) {
-            System.out.println("There is no students");
+        if (studentItems.isEmpty()) {
+            System.out.println("There are no students");
             return;
         }
         int i = 1;
@@ -216,30 +203,31 @@ public class Course {
     }
 
     public Number getHighestGradeValue() {
-        double MAX = studentItems.get(0).getGrade().doubleValue();
-        for (int i = 1; i < studentItems.size(); i++) {
-            if (studentItems.get(i).getGrade().doubleValue() > MAX) {
-                MAX = studentItems.get(i).getGrade().doubleValue();
+        double maxGrade = studentItems.get(0).getGrade().doubleValue();
+        for (StudentItem si : studentItems) {
+            double grade = si.getGrade().doubleValue();
+            if (grade > maxGrade) {
+                maxGrade = grade;
             }
         }
-        return MAX;
+        return maxGrade;
     }
 
     public Student getHighestGradeStudent() {
-        double MAX = studentItems.get(0).getGrade().doubleValue();
-        Student result = studentItems.get(0).getStudent();
-        for (int i = 1; i < studentItems.size(); i++) {
-            if (studentItems.get(i).getGrade().doubleValue() > MAX) {
-                MAX = studentItems.get(i).getGrade().doubleValue();
-                result = studentItems.get(i).getStudent();
+        double maxGrade = studentItems.get(0).getGrade().doubleValue();
+        Student highestGradeStudent = studentItems.get(0).getStudent();
+        for (StudentItem si : studentItems) {
+            double grade = si.getGrade().doubleValue();
+            if (grade > maxGrade) {
+                maxGrade = grade;
+                highestGradeStudent = si.getStudent();
             }
         }
-        return result;
+        return highestGradeStudent;
     }
 
     public void gradeStudent(Student student, Number grade) {
         if (grade.doubleValue() < 0 || grade.doubleValue() > 20) return;
-        boolean wasFound = false;
         for (StudentItem si : studentItems) {
             if (si.getStudent().equals(student)) {
                 si.setGrade(grade);
@@ -258,10 +246,6 @@ public class Course {
         return 0;
     }
 
-    public String getID() {
-        return ID;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -277,6 +261,10 @@ public class Course {
 
     @Override
     public String toString() {
-        return "Course{" + " Name=" + name + " creditUnit=" + creditUnit + " ID=" + ID + "}";
+        return "Course{" +
+                "Name='" + name + '\'' +
+                ", creditUnit=" + creditUnit +
+                ", ID='" + ID + '\'' +
+                '}';
     }
 }

@@ -1,5 +1,5 @@
 import java.awt.*;
-import java.io.Console;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
-import java.io.FileWriter;
-import java.io.IOException;
 
 public class CLI {
 
@@ -26,18 +24,10 @@ public class CLI {
         Scanner scanner = new Scanner(System.in);
         Console console = System.console();
 
-        List<Teacher> teachers = new ArrayList<>();
-
-        List<String> lines = readFile("teachers.txt");
-        if (lines != null) {
-            for (String line : lines) {
-                Teacher teacher = parseTeacher(line);
-                if (teacher != null) {
-                    teachers.add(teacher);
-                }
-            }
+        List<Teacher> teachers = readSerializedFileTeacher("teachers.ser");
+        if (teachers == null) {
+            teachers = new ArrayList<>();
         }
-
 
         Admin admin = new Admin("admin", "admin", new ArrayList<>(), "admin".toCharArray(), teachers);
 
@@ -62,6 +52,7 @@ public class CLI {
         }
 
         scanner.close();
+        writeSerializedFile("teachers.ser", teachers);
     }
 
     private static void clearScreen() {
@@ -207,19 +198,14 @@ public class CLI {
         String lastName = scanner.next();
         System.out.print("Username: ");
         String ID = scanner.next();
-        System.out.print("Password ");
+        System.out.print("Password: ");
         String password = scanner.next();
-
 
         Teacher teacher = new Teacher(firstName, lastName, new ArrayList<>(), ID, password.toCharArray());
         admin.addTeacher(teacher);
+        writeSerializedFile("teachers.ser", admin.getTeachers());
 
-        try (FileWriter writer = new FileWriter("teachers.txt", true)) {
-            writer.write(teacher.toString() + "\n");
-            System.out.println(GREEN + "Teacher added successfully!");
-        } catch (IOException e) {
-            System.out.println(RED + "Failed to write to file: " + e.getMessage());
-        }
+        System.out.println(GREEN + "Teacher added successfully!");
     }
 
     private static void removeTeacher(Scanner scanner, Admin admin) {
@@ -230,7 +216,7 @@ public class CLI {
 
         if (result == null) {
             System.out.println(GREEN + "Teacher removed successfully!");
-            updateFile("teachers.txt", ID);
+            writeSerializedFile("teachers.ser", admin.getTeachers());
         } else {
             System.out.println(RED + result);
         }
@@ -242,19 +228,13 @@ public class CLI {
         String name = scanner.next();
 
         System.out.print("Choose the teacher: ");
-        List<String> lines = readFile("teachers.txt");
-        if (lines == null) return;
+        List<Teacher> teachers = readSerializedFileTeacher("teachers.ser");
+        if (teachers == null) return;
 
-        int blanks = 0;
-        for (String s : lines) {
-            if (s.isEmpty()) blanks++;
-        }
-
-        displayList(lines);
+        displayList(teachers);
         scanner.nextLine();
         int chosenTeacherNum = scanner.nextInt();
-        String chosenTeacherID = lines.get(chosenTeacherNum + blanks - 2).split(" ")[3].substring(3);
-        Teacher chosenTeacher = admin.findTeacherByID(chosenTeacherID);
+        Teacher chosenTeacher = teachers.get(chosenTeacherNum - 1);
 
         System.out.print("Credit Unit: ");
         int creditUnit = scanner.nextInt();
@@ -269,32 +249,28 @@ public class CLI {
         String ID = scanner.nextLine();
         Course course = new Course(name, creditUnit, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), isAvailable, examDate, semester, chosenTeacher, ID);
 
-        try (FileWriter writer = new FileWriter("courses.txt", true)) {
-            writer.write(course.toString() + "\n");
-            System.out.println(GREEN + "Course added successfully!");
-        } catch (IOException e) {
-            System.out.println(RED + "Failed to write to file: " + e.getMessage());
-        }
-
         admin.addCourse(course);
         chosenTeacher.addCourse(course);
+        writeSerializedFile("teachers.ser", teachers);
+
+        System.out.println(GREEN + "Course added successfully!");
     }
 
     private static void removeCourse(Scanner scanner, Admin admin) {
         System.out.println(YELLOW + "Removing a course: ");
         System.out.print("Choose the course by entering the ID: ");
-        List<String> lines = readFile("courses.txt");
-        if (lines == null) return;
+        List<Course> courses = readSerializedFileCourse("courses.ser");
+        if (courses == null) return;
 
-        displayList(lines);
+        displayList(courses);
         scanner.nextLine();
         int chosenCourseNum = scanner.nextInt();
-        String chosenCourseID = lines.get(chosenCourseNum - 1).split(" ")[2].substring(3);
-        String result = admin.removeCourseByID(chosenCourseID);
+        Course chosenCourse = courses.get(chosenCourseNum - 1);
+        String result = admin.removeCourseByID(chosenCourse.getID());
 
         if (result == null) {
             System.out.println(GREEN + "Course removed successfully!");
-            updateFile("courses.txt", chosenCourseID);
+            writeSerializedFile("courses.ser", admin.getCourses());
         } else {
             System.out.println(RED + result);
         }
@@ -308,7 +284,7 @@ public class CLI {
         String lastName = scanner.next();
         System.out.print("ID: ");
         String ID = scanner.next();
-        System.out.print("Password ");
+        System.out.print("Password: ");
         String password = scanner.next();
         scanner.nextLine();
         System.out.print("Semester: ");
@@ -316,13 +292,9 @@ public class CLI {
 
         Student student = new Student(firstName, lastName, new ArrayList<>(), password.toCharArray(), ID, semester);
         admin.getStudents().add(student);
+        writeSerializedFile("students.ser", admin.getStudents());
 
-        try (FileWriter writer = new FileWriter("students.txt", true)) {
-            writer.write(student.toString() + "\n");
-            System.out.println(GREEN + "Student added successfully!");
-        } catch (IOException e) {
-            System.out.println(RED + "Failed to write to file: " + e.getMessage());
-        }
+        System.out.println(GREEN + "Student added successfully!");
     }
 
     private static void removeStudent(Scanner scanner, Admin admin) {
@@ -333,7 +305,7 @@ public class CLI {
 
         if (result == null) {
             System.out.println(GREEN + "Student removed successfully!");
-            updateFile("students.txt", ID);
+            writeSerializedFile("students.ser", admin.getStudents());
         } else {
             System.out.println(RED + result);
         }
@@ -350,30 +322,20 @@ public class CLI {
         System.out.print("ID: ");
         String ID = scanner.nextLine();
         System.out.print("Choose the course by entering the ID: ");
-        List<String> lines = readFile("courses.txt");
-        if (lines == null) return;
+        List<Course> courses = readSerializedFileCourse("courses.ser");
+        if (courses == null) return;
 
-        int blanks = 0;
-        for (String s : lines) {
-            if (s.isEmpty()) blanks++;
-        }
-
-        displayList(lines);
+        displayList(courses);
         scanner.nextLine();
         int chosenCourseNum = scanner.nextInt();
-        String chosenCourseID = lines.get(chosenCourseNum + blanks - 2).split(" ")[2].substring(3);
-        Course chosenCourse = admin.findCourseByID(chosenCourseID);
+        Course chosenCourse = courses.get(chosenCourseNum - 1);
 
         Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse, ID);
         chosenCourse.addAssignment(assignment);
         admin.addAssignmentAdmin(assignment);
+        writeSerializedFile("assignments.ser", admin.getAssignments());
 
-        try (FileWriter writer = new FileWriter("assignments.txt", true)) {
-            writer.write(assignment.toString() + "\n");
-            System.out.println(GREEN + "Assignment added successfully!");
-        } catch (IOException e) {
-            System.out.println(RED + "Failed to write to file: " + e.getMessage());
-        }
+        System.out.println(GREEN + "Assignment added successfully!");
     }
 
     private static void removeAssignment(Scanner scanner, Admin admin) {
@@ -384,7 +346,7 @@ public class CLI {
 
         if (result == null) {
             System.out.println(GREEN + "Assignment removed successfully!");
-            updateFile("assignments.txt", ID);
+            writeSerializedFile("assignments.ser", admin.getAssignments());
         } else {
             System.out.println(RED + result);
         }
@@ -403,26 +365,21 @@ public class CLI {
         System.out.print("ID: ");
         String ID = scanner.nextLine();
         System.out.print("Choose the course by entering the ID: ");
-        List<String> lines = readFile("courses.txt");
-        if (lines == null) return;
+        List<Course> courses = readSerializedFileCourse("courses.ser");
+        if (courses == null) return;
 
-        displayList(lines);
+        displayList(courses);
         scanner.nextLine();
         int chosenCourseNum = scanner.nextInt();
-        String chosenCourseID = lines.get(chosenCourseNum - 1).split(" ")[2].substring(3);
-        Course chosenCourse = admin.findCourseByID(chosenCourseID);
+        Course chosenCourse = courses.get(chosenCourseNum - 1);
 
         Project project = new Project(deadline, isAvailable, chosenCourse, ID, name);
         chosenCourse.addProject(project);
         admin.addProject(chosenCourse, project);
         admin.addProjectAdmin(project);
+        writeSerializedFile("projects.ser", admin.getProjects());
 
-        try (FileWriter writer = new FileWriter("projects.txt", true)) {
-            writer.write(project.toString() + "\n");
-            System.out.println(GREEN + "Project added successfully!");
-        } catch (IOException e) {
-            System.out.println(RED + "Failed to write to file: " + e.getMessage());
-        }
+        System.out.println(GREEN + "Project added successfully!");
     }
 
     private static void removeProject(Scanner scanner, Admin admin) {
@@ -433,7 +390,7 @@ public class CLI {
 
         if (result == null) {
             System.out.println(GREEN + "Project removed successfully!");
-            updateFile("projects.txt", ID);
+            writeSerializedFile("projects.ser", admin.getProjects());
         } else {
             System.out.println(RED + result);
         }
@@ -555,56 +512,39 @@ public class CLI {
         }
     }
 
-    private static List<String> readFile(String fileName) {
-        try {
-            return Files.readAllLines(Paths.get(fileName));
-        } catch (IOException e) {
+    private static List<Teacher> readSerializedFileTeacher(String fileName) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+            return (List<Teacher>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             System.out.println(RED + "Failed to read from file: " + e.getMessage());
             return null;
         }
     }
 
-    private static void displayList(List<String> lines) {
-        int i = 1;
-        for (String line : lines) {
-            if (!line.isEmpty()) {
-                System.out.println(i + " " + line);
-                i++;
-            }
+    private static List<Course> readSerializedFileCourse(String fileName) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+            return (List<Course>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println(RED + "Failed to read from file: " + e.getMessage());
+            return null;
         }
     }
 
-    private static void updateFile(String fileName, String id) {
-        List<String> lines = readFile(fileName);
-        if (lines == null) return;
-
-        List<String> updatedLines = new ArrayList<>();
-        for (String line : lines) {
-            if (!line.contains(id)) {
-                updatedLines.add(line);
-            }
-        }
-
-        try (FileWriter writer = new FileWriter(fileName, false)) {
-            for (String line : updatedLines) {
-                writer.write(line + "\n");
-            }
+    private static void writeSerializedFile(String fileName, List<?> list) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+            oos.writeObject(list);
         } catch (IOException e) {
             System.out.println(RED + "Failed to write to file: " + e.getMessage());
         }
     }
 
-    private static Teacher parseTeacher(String line) {
-        try {
-            String firstName = line.split("FirstName=")[1].split(" ")[0];
-            String lastName = line.split("LastName=")[1].split(" ")[0];
-            String ID = line.split("ID=")[1].split(" ")[0];
-            String passwordStr = line.split("Password=\\[")[1].split("\\]")[0];
-            char[] password = passwordStr.replaceAll(", ", "").toCharArray();
-
-            return new Teacher(firstName, lastName, new ArrayList<>(), ID, password);
-        } catch (Exception e) {
+    private static void displayList(List<?> list) {
+        int i = 1;
+        for (Object obj : list) {
+            if (obj != null) {
+                System.out.println(i + " " + obj.toString());
+                i++;
+            }
         }
-        return null;
     }
 }

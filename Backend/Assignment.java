@@ -1,16 +1,19 @@
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Assignment {
-    private LocalDate creationDate;
+public class Assignment implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private final LocalDate creationDate;
     private LocalDate deadline;
     private boolean isAvailable;
     private final Course course;
-    private static List<Assignment> archive = new ArrayList<>();
-    private String ID;
+    private static final List<Assignment> archive = new ArrayList<>();
+    private final String ID;
 
     public Assignment(LocalDate deadline, boolean isAvailable, Course course, String ID) {
         this.creationDate = LocalDate.now();
@@ -18,28 +21,30 @@ public class Assignment {
         this.isAvailable = isAvailable;
         this.course = course;
         this.ID = ID;
-        if (!isAvailable) archive.add(this);
-    }
-
-    public void setDeadline(LocalDate deadline) {
-        this.deadline = deadline;
-    }
-
-    public void extendDeadlineByDays(int days) {
-        this.deadline = this.deadline.plusDays(days);
-    }
-
-    public void setAvailable(boolean available) {
-        isAvailable = available;
-        if (isAvailable) archive.remove(this);
+        if (!isAvailable) {
+            archive.add(this);
+        }
     }
 
     public LocalDate getDeadline() {
         return deadline;
     }
 
+    public void setDeadline(LocalDate deadline) {
+        this.deadline = deadline;
+    }
+
     public boolean isAvailable() {
         return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        this.isAvailable = available;
+        if (available) {
+            archive.remove(this);
+        } else {
+            archive.add(this);
+        }
     }
 
     public Course getCourse() {
@@ -58,6 +63,10 @@ public class Assignment {
         return ID;
     }
 
+    public void extendDeadlineByDays(int days) {
+        this.deadline = this.deadline.plusDays(days);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -69,5 +78,15 @@ public class Assignment {
     @Override
     public int hashCode() {
         return Objects.hash(ID);
+    }
+
+    @Override
+    public String toString() {
+        return "Assignment{" +
+                "ID='" + ID + '\'' +
+                ", deadline=" + deadline +
+                ", isAvailable=" + isAvailable +
+                ", course=" + course.getName() +
+                '}';
     }
 }
