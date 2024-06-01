@@ -46,11 +46,11 @@ public class Teacher extends Person {
         }
     }
 
-    public void rewardStudent(Course course, Student student, Number reward) {
-        if (course != null) {
-            course.gradeStudent(student, course.getGrade(student) + reward.doubleValue());
-        }
+    public void rewardStudent(Course course, Student student, double rewardPoints) {
+        double currentGrade = course.getGrade(student);
+        course.gradeStudent(student, currentGrade + rewardPoints);
     }
+
 
     public void gradeStudent(Course course, Student student, Number grade) {
         if (course == null || !getCourses().contains(course)) {

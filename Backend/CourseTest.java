@@ -30,8 +30,8 @@ public class CourseTest {
     public void testAddRemoveStudent() {
         teacher.addStudent(course, student1);
         boolean test1 = false;
-        for (StudentItem si : course.getStudentItems()) {
-            if (si.getStudent().equals(student1)) {
+        for (Student student : course.getStudents()) {
+            if (student.equals(student1)) {
                 test1 = true;
                 break;
             }
@@ -40,8 +40,8 @@ public class CourseTest {
 
         teacher.removeStudent(course, student1);
         boolean test2 = false;
-        for (StudentItem si : course.getStudentItems()) {
-            if (si.getStudent().equals(student1)) {
+        for (Student student : course.getStudents()) {
+            if (student.equals(student1)) {
                 test2 = true;
                 break;
             }
@@ -51,11 +51,11 @@ public class CourseTest {
         teacher.addStudent(course, student1);
         teacher.addStudent(course, student2);
         boolean test3 = false, test4 = false;
-        for (StudentItem si : course.getStudentItems()) {
-            if (si.getStudent().equals(student1)) {
+        for (Student student : course.getStudents()) {
+            if (student.equals(student1)) {
                 test3 = true;
             }
-            if (si.getStudent().equals(student2)) {
+            if (student.equals(student2)) {
                 test4 = true;
             }
         }
@@ -65,11 +65,11 @@ public class CourseTest {
         teacher.removeStudent(course, student1);
         test3 = false;
         test4 = false;
-        for (StudentItem si : course.getStudentItems()) {
-            if (si.getStudent().equals(student1)) {
+        for (Student student : course.getStudents()) {
+            if (student.equals(student1)) {
                 test3 = true;
             }
-            if (si.getStudent().equals(student2)) {
+            if (student.equals(student2)) {
                 test4 = true;
             }
         }

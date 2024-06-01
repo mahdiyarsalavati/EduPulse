@@ -126,6 +126,6 @@ public class Student extends Person {
         for (char c : getPassword()) {
             password.append(c);
         }
-        return getFirstName() + "," + getLastName() + "," + coursesIDs + "," + password + "," + semester;
+        return getFirstName() + "," + getLastName() + "," + coursesIDs + "," + password + "," + getID() + "," + semester;
     }
 }

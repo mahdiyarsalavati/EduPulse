@@ -16,4 +16,9 @@ public class Project extends Assignment {
     public void setName(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return getDeadline() + "," + isAvailable() + "," + getID() + "," + name;
+    }
 }

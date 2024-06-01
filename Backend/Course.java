@@ -1,13 +1,12 @@
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Course implements Serializable {
     private String name;
     private Teacher teacher;
     private int creditUnit;
-    private List<StudentItem> studentItems = new ArrayList<>();
+    private Map<Student, Double> studentGrades = new HashMap<>();
     private List<Project> projects = new ArrayList<>();
     private List<Assignment> assignments = new ArrayList<>();
     private boolean isAvailable;
@@ -67,12 +66,8 @@ public class Course implements Serializable {
         this.creditUnit = creditUnit;
     }
 
-    public List<StudentItem> getStudentItems() {
-        return studentItems;
-    }
-
-    public void setStudentItems(List<StudentItem> studentItems) {
-        this.studentItems = studentItems;
+    public Map<Student, Double> getStudentGrades() {
+        return studentGrades;
     }
 
     public List<Project> getProjects() {
@@ -91,12 +86,12 @@ public class Course implements Serializable {
         return assignments.size();
     }
 
-    public void setAssignments(List<Assignment> assignments) {
-        this.assignments = assignments;
+    public int getStudentsLength() {
+        return studentGrades.size();
     }
 
-    public int getStudentItemsLength() {
-        return studentItems.size();
+    public void setAssignments(List<Assignment> assignments) {
+        this.assignments = assignments;
     }
 
     public boolean isAvailable() {
@@ -129,8 +124,7 @@ public class Course implements Serializable {
 
     public void addStudent(Student student) {
         if (student != null) {
-            StudentItem st = new StudentItem(student);
-            studentItems.add(st);
+            studentGrades.put(student, 0.0);
             student.addCourse(this);
             student.addCreditUnit(this.creditUnit);
         }
@@ -138,23 +132,15 @@ public class Course implements Serializable {
 
     public void addStudent(Student student, Number grade) {
         if (student != null) {
-            StudentItem st = new StudentItem(student, grade);
-            studentItems.add(st);
+            studentGrades.put(student, grade.doubleValue());
             student.addCourse(this);
             student.addCreditUnit(this.creditUnit);
         }
     }
 
     public void removeStudent(Student student) {
-        StudentItem toRemove = null;
-        for (StudentItem si : studentItems) {
-            if (si.getStudent().equals(student)) {
-                toRemove = si;
-                break;
-            }
-        }
-        if (toRemove != null) {
-            studentItems.remove(toRemove);
+        if (studentGrades.containsKey(student)) {
+            studentGrades.remove(student);
             student.removeCourse(this);
             student.addCreditUnit(-this.creditUnit);
         } else {
@@ -169,9 +155,7 @@ public class Course implements Serializable {
     }
 
     public void removeAssignment(Assignment assignment) {
-        if (assignments.remove(assignment)) {
-            return;
-        } else {
+        if (!assignments.remove(assignment)) {
             throw new IllegalArgumentException("Assignment could not be found!");
         }
     }
@@ -183,67 +167,49 @@ public class Course implements Serializable {
     }
 
     public void removeProject(Project project) {
-        if (projects.remove(project)) {
-            return;
-        } else {
+        if (!projects.remove(project)) {
             throw new IllegalArgumentException("Project could not be found!");
         }
     }
 
     public void printStudents() {
-        if (studentItems.isEmpty()) {
+        if (studentGrades.isEmpty()) {
             System.out.println("There are no students");
             return;
         }
         int i = 1;
-        for (StudentItem si : studentItems) {
-            System.out.println(i + ": First Name: " + si.getStudent().getFirstName() + " - Last Name: " + si.getStudent().getLastName() + " - Grade: " + si.getGrade());
+        for (Map.Entry<Student, Double> entry : studentGrades.entrySet()) {
+            System.out.println(i + ": First Name: " + entry.getKey().getFirstName() + " - Last Name: " + entry.getKey().getLastName() + " - Grade: " + entry.getValue());
             i++;
         }
     }
 
     public Number getHighestGradeValue() {
-        double maxGrade = studentItems.get(0).getGrade().doubleValue();
-        for (StudentItem si : studentItems) {
-            double grade = si.getGrade().doubleValue();
-            if (grade > maxGrade) {
-                maxGrade = grade;
-            }
-        }
-        return maxGrade;
+        return Collections.max(studentGrades.values());
     }
 
     public Student getHighestGradeStudent() {
-        double maxGrade = studentItems.get(0).getGrade().doubleValue();
-        Student highestGradeStudent = studentItems.get(0).getStudent();
-        for (StudentItem si : studentItems) {
-            double grade = si.getGrade().doubleValue();
-            if (grade > maxGrade) {
-                maxGrade = grade;
-                highestGradeStudent = si.getStudent();
-            }
-        }
-        return highestGradeStudent;
+        return studentGrades.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .orElseThrow(() -> new NoSuchElementException("No students in course"))
+                .getKey();
     }
 
     public void gradeStudent(Student student, Number grade) {
         if (grade.doubleValue() < 0 || grade.doubleValue() > 20) return;
-        for (StudentItem si : studentItems) {
-            if (si.getStudent().equals(student)) {
-                si.setGrade(grade);
-                return;
-            }
+        if (studentGrades.containsKey(student)) {
+            studentGrades.put(student, grade.doubleValue());
+        } else {
+            throw new IllegalArgumentException("Student could not be found!");
         }
-        throw new IllegalArgumentException("Student could not be found!");
     }
 
     public double getGrade(Student student) {
-        for (StudentItem si : studentItems) {
-            if (si.getStudent().equals(student)) {
-                return si.getGrade().doubleValue();
-            }
-        }
-        return 0;
+        return studentGrades.getOrDefault(student, 0.0);
+    }
+
+    public List<Student> getStudents() {
+        return studentGrades.keySet().stream().collect(Collectors.toList());
     }
 
     @Override
@@ -261,14 +227,9 @@ public class Course implements Serializable {
 
     @Override
     public String toString() {
-        String studentsIDs = "[";
-        for (int i = 0; i < getStudentItems().size(); i++) {
-            studentsIDs += getStudentItems().get(i).getStudent().getID();
-            if (i != getStudentItems().size() - 1) {
-                studentsIDs += ",";
-            }
-        }
-        studentsIDs += "]";
+        String studentsIDs = studentGrades.keySet().stream()
+                .map(Student::getID)
+                .collect(Collectors.joining(",", "[", "]"));
 
         String assignmentsIDs = "[";
         for (int i = 0; i < getAssignments().size(); i++) {
@@ -290,4 +251,17 @@ public class Course implements Serializable {
 
         return name + "," + creditUnit + "," + studentsIDs + "," + projectsIDs + "," + assignmentsIDs + "," + isAvailable + "," + examDate + "," + semester + "," + teacher.getID() + "," + getID();
     }
+
+    public String toMapString() {
+        String result = getID().toString() + ",";
+        var st = studentGrades.entrySet().stream().collect(Collectors.toList());
+        for (int i = 0; i < st.size(); i++) {
+            result += st.get(i).getKey().getID() + ":" + st.get(i).getValue();
+            if (i != st.size() - 1) {
+                result += ",";
+            }
+        }
+        return result;
+    }
+
 }

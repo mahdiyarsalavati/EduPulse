@@ -46,21 +46,21 @@ public class TeacherTest {
     @Test
     public void addStudentTest() {
         teacher.addStudent(course1, student1);
-        assertEquals(1, course1.getStudentItemsLength());
-        assertTrue(course1.getStudentItems().getFirst().getStudent().equals(student1));
+        assertEquals(1, course1.getStudentsLength());
+        assertTrue(course1.getStudents().getFirst().equals(student1));
     }
 
     @Test
     public void removeStudentTest() {
         teacher.addStudent(course1, student1);
-        assertEquals(1, course1.getStudentItemsLength());
+        assertEquals(1, course1.getStudentsLength());
         assertEquals(course1.getCreditUnit(), student1.getCreditUnits());
-        assertTrue(course1.getStudentItems().getFirst().getStudent().equals(student1));
+        assertTrue(course1.getStudents().getFirst().equals(student1));
 
         teacher.removeStudent(course1, student1);
         assertEquals(0, student1.getCreditUnits());
-        assertEquals(0, course1.getStudentItemsLength());
-        assertTrue(course1.getStudentItems().isEmpty());
+        assertEquals(0, course1.getStudentsLength());
+        assertTrue(course1.getStudents().isEmpty());
     }
 
     @Test
