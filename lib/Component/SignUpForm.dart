@@ -3,23 +3,33 @@ import 'package:flutter/material.dart';
 
 import '../screens/UserInfoPage.dart';
 
-class SignIn extends StatefulWidget {
-  const SignIn({super.key});
+class SignUp extends StatefulWidget {
+  const SignUp({super.key});
 
   @override
-  _SignInState createState() => _SignInState();
+  _SignUpState createState() => _SignUpState();
 }
 
-class _SignInState extends State<SignIn> {
+class _SignUpState extends State<SignUp> {
   bool _obscureText = true;
   final _formKey = GlobalKey<FormState>();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _verifyPasswordController = TextEditingController();
 
   void _toggleObscureText() {
     setState(() {
       _obscureText = !_obscureText;
     });
+  }
+
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'این فیلد نمی‌تواند خالی باشد';
+    }
+    return null;
   }
 
   String? _validateUsername(String? value) {
@@ -60,14 +70,21 @@ class _SignInState extends State<SignIn> {
     return null;
   }
 
+  String? _validateVerifyPassword(String? value) {
+    if (value != _passwordController.text) {
+      return 'رمز عبورها با هم مطابقت ندارند';
+    }
+    return null;
+  }
+
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => UserInfoPage(
-            firstName: 'علی',
-            lastName: 'علوی',
+            firstName: _firstNameController.text,
+            lastName: _lastNameController.text,
             username: _usernameController.text,
           ),
         ),
@@ -77,8 +94,11 @@ class _SignInState extends State<SignIn> {
 
   @override
   void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
+    _verifyPasswordController.dispose();
     super.dispose();
   }
 
@@ -88,7 +108,33 @@ class _SignInState extends State<SignIn> {
       key: _formKey,
       child: Column(
         children: [
-          SizedBox(height: 40),
+          SizedBox(height: 20),
+          Text("نام",
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
+          TextFormField(
+            controller: _firstNameController,
+            decoration: InputDecoration(
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(CupertinoIcons.person, color: Colors.blueAccent),
+              ),
+            ),
+            validator: _validateName,
+          ),
+          SizedBox(height: 20),
+          Text("نام خانوادگی",
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
+          TextFormField(
+            controller: _lastNameController,
+            decoration: InputDecoration(
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(CupertinoIcons.person, color: Colors.blueAccent),
+              ),
+            ),
+            validator: _validateName,
+          ),
+          SizedBox(height: 20),
           Text("نام کاربری",
               textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
           TextFormField(
@@ -102,7 +148,7 @@ class _SignInState extends State<SignIn> {
             ),
             validator: _validateUsername,
           ),
-          SizedBox(height: 30),
+          SizedBox(height: 20),
           Text("رمز عبور",
               textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
           TextFormField(
@@ -123,6 +169,20 @@ class _SignInState extends State<SignIn> {
             ),
             validator: _validatePassword,
           ),
+          SizedBox(height: 20),
+          Text("تایید رمز عبور",
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
+          TextFormField(
+            controller: _verifyPasswordController,
+            obscureText: true,
+            decoration: InputDecoration(
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Icon(CupertinoIcons.lock, color: Colors.blueAccent),
+              ),
+            ),
+            validator: _validateVerifyPassword,
+          ),
           SizedBox(height: 30),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
@@ -130,7 +190,7 @@ class _SignInState extends State<SignIn> {
                 minimumSize: Size(1000, 56)),
             onPressed: _submit,
             icon: Icon(CupertinoIcons.arrow_right_circle),
-            label: Text("ورود", style: TextStyle(color: Colors.white)),
+            label: Text("ثبت نام", style: TextStyle(color: Colors.white)),
           )
         ],
       ),

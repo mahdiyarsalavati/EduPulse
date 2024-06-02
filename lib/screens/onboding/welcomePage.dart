@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../Component/AnimatedButton.dart';
 import '../../Component/SignInForm.dart';
-import '../../Component/SignUP.dart';
+import '../../Component/SignUpForm.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -55,7 +55,8 @@ class _WelcomePageState extends State<WelcomePage> {
                                 ),
                               ),
                               Text("برنامه مدیریت دانشگاهی", style: TextStyle(color: Colors.white)),
-                              SizedBox(height: screenSize.width / 0.9),
+                              SizedBox(height: screenSize.width / 1.6),
+                              Image.asset("assets/Backgrounds/banner.png"),
                               AnimatedButton(
                                 press: () {
                                   showGeneralDialog(
