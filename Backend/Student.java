@@ -118,7 +118,7 @@ public class Student extends Person {
         for (int i = 0; i < getCourses().size(); i++) {
             coursesIDs += getCourses().get(i).getID();
             if (i != getCourses().size() - 1) {
-                coursesIDs += ",";
+                coursesIDs += "-";
             }
         }
         coursesIDs += "]";

@@ -229,13 +229,13 @@ public class Course implements Serializable {
     public String toString() {
         String studentsIDs = studentGrades.keySet().stream()
                 .map(Student::getID)
-                .collect(Collectors.joining(",", "[", "]"));
+                .collect(Collectors.joining("-", "[", "]"));
 
         String assignmentsIDs = "[";
         for (int i = 0; i < getAssignments().size(); i++) {
             assignmentsIDs += getAssignments().get(i).getID();
             if (i != getAssignments().size() - 1) {
-                assignmentsIDs += ",";
+                assignmentsIDs += "-";
             }
         }
         assignmentsIDs += "]";
@@ -244,7 +244,7 @@ public class Course implements Serializable {
         for (int i = 0; i < getProjects().size(); i++) {
             projectsIDs += getProjects().get(i).getID();
             if (i != getProjects().size() - 1) {
-                projectsIDs += ",";
+                projectsIDs += "-";
             }
         }
         projectsIDs += "]";

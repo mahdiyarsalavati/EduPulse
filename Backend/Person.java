@@ -44,7 +44,8 @@ public class Person implements Serializable {
     }
 
     public void addCourse(Course course) {
-        courses.add(course);
+        if (!this.getCourses().contains(course))
+            courses.add(course);
         this.coursesLength++;
     }
 

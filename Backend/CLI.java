@@ -42,9 +42,18 @@ public class CLI {
     private static final FileUtils<Project> fileUtilsProject = new FileUtils<>();
 
     static {
-        loadCourses();
         loadTeachers();
         loadStudents();
+        loadCourses();
+        loadAssignments();
+        loadProjects();
+        loadCourseMaps();
+    }
+
+    private static void reload() {
+        loadTeachers();
+        loadStudents();
+        loadCourses();
         loadAssignments();
         loadProjects();
         loadCourseMaps();
@@ -65,7 +74,7 @@ public class CLI {
             String lastName = details[1];
             String coursesIDs1 = details[2].replace("[", "");
             coursesIDs1 = coursesIDs1.replace("]", "");
-            String[] coursesIDs = coursesIDs1.split(",");
+            String[] coursesIDs = coursesIDs1.split("-");
             List<Course> teacherCourses = new ArrayList<>();
             for (String cid : coursesIDs) {
                 for (Course course : courses) {
@@ -95,7 +104,7 @@ public class CLI {
             String lastName = details[1];
             String coursesIDs1 = details[2].replace("[", "");
             coursesIDs1 = coursesIDs1.replace("]", "");
-            String[] coursesIDs = coursesIDs1.split(",");
+            String[] coursesIDs = coursesIDs1.split("-");
             List<Course> studentCourses = new ArrayList<>();
             for (String cid : coursesIDs) {
                 for (Course course : courses) {
@@ -127,16 +136,16 @@ public class CLI {
             String name = details[0];
             Integer creditUnit = Integer.parseInt(details[1]);
 
-            String[] studentsIDs = details[2].replace("[", "").replace("]", "").split(",");
-            List<Student> students = new ArrayList<>();
+            String[] studentsIDs = details[2].replace("[", "").replace("]", "").split("-");
+            List<Student> courseStudents = new ArrayList<>();
             for (String studentID : studentsIDs) {
                 Student student = students.stream().filter(st -> st.getID().equals(studentID)).findFirst().orElse(null);
                 if (student != null) {
-                    students.add(student);
+                    courseStudents.add(student);
                 }
             }
 
-            String[] assignmentsIDs = details[3].replace("[", "").replace("]", "").split(",");
+            String[] assignmentsIDs = details[3].replace("[", "").replace("]", "").split("-");
             List<Assignment> courseAssignments = new ArrayList<>();
             for (String assignmentID : assignmentsIDs) {
                 Assignment assignment = assignments.stream().filter(a -> a.getID().equals(assignmentID)).findFirst().orElse(null);
@@ -145,7 +154,7 @@ public class CLI {
                 }
             }
 
-            String[] projectsIDs = details[4].replace("[", "").replace("]", "").split(",");
+            String[] projectsIDs = details[4].replace("[", "").replace("]", "").split("-");
             List<Project> courseProjects = new ArrayList<>();
             for (String projectID : projectsIDs) {
                 Project project = projects.stream().filter(p -> p.getID().equals(projectID)).findFirst().orElse(null);
@@ -160,7 +169,7 @@ public class CLI {
             Teacher teacher = teachers.stream().filter(t -> t.getID().equals(details[8])).findFirst().orElse(null);
             String ID = details[9];
 
-            Course course = new Course(name, creditUnit, students, courseProjects, courseAssignments, isAvailable, examDate, semester, teacher, ID);
+            Course course = new Course(name, creditUnit, courseStudents, courseProjects, courseAssignments, isAvailable, examDate, semester, teacher, ID);
             courses.add(course);
         }
     }
@@ -424,93 +433,76 @@ public class CLI {
     }
 
     private static void addTeacher(Scanner scanner, Console console, Admin admin) {
+        reload();
         System.out.println(YELLOW + "Adding a teacher: ");
         System.out.print("First Name: ");
         String firstName = scanner.next();
         System.out.print("Last Name: ");
         String lastName = scanner.next();
-        System.out.print("Username: ");
+        System.out.print("Username (ID): ");
         String ID = scanner.next();
         System.out.print("Password: ");
         String password = scanner.next();
 
-        Teacher teacher = new Teacher(firstName, lastName, new ArrayList<>(), ID, password.toCharArray());
-        admin.addTeacher(teacher);
-        fileUtilsTeacher.writeAll(admin.getTeachers(), TEACHERS_FILE);
-
-        System.out.println(GREEN + "Teacher added successfully!");
+        boolean exists = teachers.stream().anyMatch(t -> t.getID().equals(ID));
+        if (!exists) {
+            Teacher teacher = new Teacher(firstName, lastName, new ArrayList<>(), ID, password.toCharArray());
+            teachers.add(teacher);
+            System.out.println(GREEN + "Teacher added successfully!");
+            rewrite();
+        } else {
+            System.out.println(RED + "A teacher with this ID already exists.");
+        }
     }
 
-    private static void removeTeacher(Scanner scanner, Admin admin) throws FileNotFoundException {
-        System.out.println(YELLOW + "Removing a teacher: ");
-        System.out.print("Username: ");
-        String ID = scanner.next();
-        String result = admin.removeTeacherByID(ID);
 
-        if (result == null) {
-            Teacher teacher = teachers.stream().filter(t -> t.getID().equals(ID)).findFirst().orElse(null);
-            if (teacher != null) {
-                List<Course> coursesToRemove = new ArrayList<>(teacher.getCourses());
-                for (Course course : coursesToRemove) {
-                    courses.remove(course);
-                    assignments.removeIf(a -> a.getCourse().equals(course));
-                    projects.removeIf(p -> p.getCourse().equals(course));
-                }
-                teachers.remove(teacher);
-            }
-
-            fileUtilsTeacher.writeAll(teachers, TEACHERS_FILE);
-            fileUtilsCourse.writeAll(courses, COURSES_FILE);
-            fileUtilsAssignment.writeAll(assignments, ASSIGNMENTS_FILE);
-            fileUtilsProject.writeAll(projects, PROJECTS_FILE);
-
-            System.out.println(GREEN + "Teacher and related courses removed successfully!");
-        } else {
-            System.out.println(RED + result);
+    private static void removeTeacher(Scanner scanner, Admin admin) {
+        reload();
+        System.out.println(YELLOW + "Removing a teacher:");
+        if (teachers.isEmpty()) {
+            System.out.println(RED + "No teachers available to remove.");
+            return;
         }
+
+        System.out.println("Select a teacher to remove from the list:");
+        displayList(teachers);
+        int teacherIndex = scanner.nextInt() - 1;
+        if (teacherIndex < 0 || teacherIndex >= teachers.size()) {
+            System.out.println(RED + "Invalid teacher selection.");
+            return;
+        }
+        Teacher teacherToRemove = teachers.remove(teacherIndex);
+
+        courses.forEach(course -> {
+            if (course.getTeacher().equals(teacherToRemove)) {
+                course.setTeacher(null);
+            }
+        });
+
+        System.out.println(GREEN + "Teacher removed successfully.");
+        rewrite();
     }
 
 
     private static void addCourse(Scanner scanner, Admin admin) {
+        reload();
         System.out.println(YELLOW + "Adding a course: ");
         System.out.print("Name: ");
         String name = scanner.next();
-
         System.out.print("Choose the teacher: ");
-        if (teachers == null) return;
+        if (teachers.isEmpty()) return;
 
         displayList(teachers);
         scanner.nextLine();
-        int chosenTeacherNum;
-        try {
-            chosenTeacherNum = scanner.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println(RED + "Invalid input. Please enter a valid number.");
-            scanner.nextLine();
-            return;
-        }
-
+        int chosenTeacherNum = scanner.nextInt();
         Teacher chosenTeacher = teachers.get(chosenTeacherNum - 1);
 
         System.out.print("Credit Unit: ");
-        int creditUnit;
-        try {
-            creditUnit = scanner.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println(RED + "Invalid input. Please enter a valid number.");
-            scanner.nextLine();
-            return;
-        }
+        int creditUnit = scanner.nextInt();
+        scanner.nextLine();
 
         System.out.print("Is Available? 1) Yes 2) No: ");
-        boolean isAvailable;
-        try {
-            isAvailable = scanner.nextInt() == 1;
-        } catch (InputMismatchException e) {
-            System.out.println(RED + "Invalid input. Please enter 1 for Yes or 2 for No.");
-            scanner.nextLine();
-            return;
-        }
+        boolean isAvailable = scanner.nextInt() == 1;
         scanner.nextLine();
 
         System.out.print("Exam Date: ");
@@ -520,66 +512,54 @@ public class CLI {
         System.out.print("ID: ");
         String ID = scanner.nextLine();
 
-        Course course = new Course(name, creditUnit, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), isAvailable, examDate, semester, chosenTeacher, ID);
-
-        admin.addCourse(course);
-        chosenTeacher.addCourse(course);
-        courses.add(course);
-        fileUtilsCourse.writeAll(courses, COURSES_FILE);
-        fileUtilsTeacher.writeAll(teachers, TEACHERS_FILE);
-        loadCourses();
-
-        System.out.println(GREEN + "Course added successfully!");
+        boolean exists = courses.stream().anyMatch(c -> c.getID().equals(ID));
+        if (!exists) {
+            Course course = new Course(name, creditUnit, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), isAvailable, examDate, semester, chosenTeacher, ID);
+            courses.add(course);
+            System.out.println(GREEN + "Course added successfully!");
+            rewrite();
+        } else {
+            System.out.println(RED + "A course with this ID already exists.");
+        }
     }
 
 
-    private static void removeCourse(Scanner scanner, Admin admin) throws FileNotFoundException {
+    private static void removeCourse(Scanner scanner, Admin admin) {
+        reload();
         System.out.println(YELLOW + "Removing a course: ");
-        System.out.print("Choose the course by entering the number: ");
-        if (courses == null || courses.isEmpty()) {
+        if (courses.isEmpty()) {
             System.out.println(RED + "No courses available to remove.");
             return;
         }
 
         displayList(courses);
-        scanner.nextLine();
-        int chosenCourseNum;
+        System.out.print("Choose the course by entering the number: ");
+        int choice;
         try {
-            chosenCourseNum = scanner.nextInt();
+            choice = scanner.nextInt();
         } catch (InputMismatchException e) {
-            System.out.println(RED + "Invalid input. Please enter a valid number.");
+            System.out.println(RED + "Invalid input. Please enter a number.");
             scanner.nextLine();
             return;
         }
 
-        if (chosenCourseNum < 1 || chosenCourseNum > courses.size()) {
+        int index = choice - 1;
+
+        if (index < 0 || index >= courses.size()) {
             System.out.println(RED + "Invalid course number. Please enter a number between 1 and " + courses.size() + ".");
             return;
         }
 
-        Course chosenCourse = courses.get(chosenCourseNum - 1);
-        String result = admin.removeCourseByID(chosenCourse.getID());
-
-        if (result == null) {
-            courses.remove(chosenCourse);
-            Teacher teacher = chosenCourse.getTeacher();
-            if (teacher != null) {
-                teacher.getCourses().remove(chosenCourse);
-            }
-            assignments.removeIf(a -> a.getCourse().equals(chosenCourse));
-            projects.removeIf(p -> p.getCourse().equals(chosenCourse));
-            fileUtilsCourse.writeAll(courses, COURSES_FILE);
-            fileUtilsTeacher.writeAll(teachers, TEACHERS_FILE);
-            fileUtilsAssignment.writeAll(assignments, ASSIGNMENTS_FILE);
-            fileUtilsProject.writeAll(projects, PROJECTS_FILE);
-            System.out.println(GREEN + "Course removed successfully!");
-        } else {
-            System.out.println(RED + result);
-        }
+        Course courseToRemove = courses.get(index);
+        removeCourseFromAllObjects(courseToRemove);
+        courses.remove(index);
+        System.out.println(GREEN + "Course removed successfully!");
+        rewrite();
     }
 
 
     private static void addStudent(Scanner scanner, Admin admin) {
+        reload();
         System.out.println(YELLOW + "Adding a student: ");
         System.out.print("First Name: ");
         String firstName = scanner.next();
@@ -596,26 +576,34 @@ public class CLI {
         Student student = new Student(firstName, lastName, new ArrayList<>(), password.toCharArray(), ID, semester);
         admin.getStudents().add(student);
         students.add(student);
-        fileUtilsStudent.writeAll(admin.getStudents(), STUDENTS_FILE);
 
         System.out.println(GREEN + "Student added successfully!");
+        rewrite();
     }
 
     private static void removeStudent(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Removing a student: ");
-        System.out.print("ID: ");
-        String ID = scanner.next();
-        String result = admin.removeStudentByID(ID);
-
-        if (result == null) {
-            fileUtilsStudent.writeAll(admin.getStudents(), STUDENTS_FILE);
-            System.out.println(GREEN + "Student removed successfully!");
-        } else {
-            System.out.println(RED + result);
+        reload();
+        System.out.println(YELLOW + "Removing a student:");
+        if (students.isEmpty()) {
+            System.out.println(RED + "No students available.");
+            return;
         }
+
+        System.out.println("Select a student from the list:");
+        displayList(students);
+        int studentIndex = scanner.nextInt() - 1;
+        if (studentIndex < 0 || studentIndex >= students.size()) {
+            System.out.println(RED + "Invalid student selection.");
+            return;
+        }
+        Student studentToRemove = students.remove(studentIndex);
+        System.out.println(GREEN + "Student removed successfully.");
+        rewrite();
     }
 
-    private static void addAssignment(Scanner scanner, Admin admin) throws FileNotFoundException {
+
+    private static void addAssignment(Scanner scanner, Admin admin) {
+        reload();
         System.out.println(YELLOW + "Adding an assignment: ");
         System.out.print("Deadline: (from now by days): ");
         int n = scanner.nextInt();
@@ -625,38 +613,52 @@ public class CLI {
         scanner.nextLine();
         System.out.print("ID: ");
         String ID = scanner.nextLine();
-        System.out.print("Choose the course by entering the ID: ");
-        if (courses == null) return;
 
-        displayList(courses);
-        int chosenCourseNum = scanner.nextInt();
-        Course chosenCourse = courses.get(chosenCourseNum - 1);
+        boolean exists = assignments.stream().anyMatch(a -> a.getID().equals(ID));
+        if (!exists) {
+            System.out.print("Choose the course by entering the number: ");
+            displayList(courses);
+            int chosenCourseNum = scanner.nextInt();
+            if (chosenCourseNum < 1 || chosenCourseNum > courses.size()) {
+                System.out.println(RED + "Invalid course number.");
+                return;
+            }
+            Course chosenCourse = courses.get(chosenCourseNum - 1);
 
-        Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse, ID);
-        chosenCourse.addAssignment(assignment);
-        admin.addAssignmentAdmin(assignment);
-        fileUtilsAssignment.writeAll(admin.getAssignments(), ASSIGNMENTS_FILE);
-        writeCourseMaps();  // Ensure the changes are written to COURSES_MAPS.txt
-
-        System.out.println(GREEN + "Assignment added successfully!");
+            Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse, ID);
+            assignments.add(assignment);
+            chosenCourse.addAssignment(assignment);
+            System.out.println(GREEN + "Assignment added successfully!");
+            rewrite();
+        } else {
+            System.out.println(RED + "An assignment with this ID already exists.");
+        }
     }
 
 
     private static void removeAssignment(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Removing an assignment: ");
-        System.out.print("ID: ");
-        String ID = scanner.next();
-        String result = admin.removeAssignmentByID(ID);
-
-        if (result == null) {
-            fileUtilsAssignment.writeAll(admin.getAssignments(), ASSIGNMENTS_FILE);
-            System.out.println(GREEN + "Assignment removed successfully!");
-        } else {
-            System.out.println(RED + result);
+        reload();
+        System.out.println(YELLOW + "Removing an assignment:");
+        if (assignments.isEmpty()) {
+            System.out.println(RED + "No assignments available.");
+            return;
         }
+
+        System.out.println("Select an assignment from the list:");
+        displayList(assignments);
+        int assignmentIndex = scanner.nextInt() - 1;
+        if (assignmentIndex < 0 || assignmentIndex >= assignments.size()) {
+            System.out.println(RED + "Invalid assignment selection.");
+            return;
+        }
+        Assignment assignmentToRemove = assignments.remove(assignmentIndex);
+        System.out.println(GREEN + "Assignment removed successfully.");
+        rewrite();
     }
 
-    private static void addProject(Scanner scanner, Admin admin) throws FileNotFoundException {
+
+    private static void addProject(Scanner scanner, Admin admin) {
+        reload();
         System.out.println(YELLOW + "Adding a project: ");
         System.out.print("Name: ");
         String name = scanner.next();
@@ -668,201 +670,298 @@ public class CLI {
         scanner.nextLine();
         System.out.print("ID: ");
         String ID = scanner.nextLine();
-        System.out.print("Choose the course by entering the ID: ");
-        if (courses == null) return;
 
-        displayList(courses);
-        int chosenCourseNum = scanner.nextInt();
-        Course chosenCourse = courses.get(chosenCourseNum - 1);
+        boolean exists = projects.stream().anyMatch(p -> p.getID().equals(ID));
+        if (!exists) {
+            System.out.print("Choose the course by entering the number: ");
+            displayList(courses);
+            int chosenCourseNum = scanner.nextInt();
+            if (chosenCourseNum < 1 || chosenCourseNum > courses.size()) {
+                System.out.println(RED + "Invalid course number.");
+                return;
+            }
+            Course chosenCourse = courses.get(chosenCourseNum - 1);
 
-        Project project = new Project(deadline, isAvailable, chosenCourse, ID, name);
-        chosenCourse.addProject(project);
-        admin.addProject(chosenCourse, project);
-        admin.addProjectAdmin(project);
-        fileUtilsProject.writeAll(admin.getProjects(), PROJECTS_FILE);
-        writeCourseMaps();  // Ensure the changes are written to COURSES_MAPS.txt
-
-        System.out.println(GREEN + "Project added successfully!");
+            Project project = new Project(deadline, isAvailable, chosenCourse, ID, name);
+            projects.add(project);
+            chosenCourse.addProject(project);
+            System.out.println(GREEN + "Project added successfully!");
+            rewrite();
+        } else {
+            System.out.println(RED + "A project with this ID already exists.");
+        }
     }
 
 
     private static void removeProject(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Removing a project: ");
-        System.out.print("ID: ");
-        String ID = scanner.next();
-        String result = admin.removeProjectByID(ID);
-
-        if (result == null) {
-            fileUtilsProject.writeAll(admin.getProjects(), PROJECTS_FILE);
-            System.out.println(GREEN + "Project removed successfully!");
-        } else {
-            System.out.println(RED + result);
+        reload();
+        System.out.println(YELLOW + "Removing a project:");
+        if (projects.isEmpty()) {
+            System.out.println(RED + "No projects available.");
+            return;
         }
+
+        System.out.println("Select a project from the list:");
+        displayList(projects);
+        int projectIndex = scanner.nextInt() - 1;
+        if (projectIndex < 0 || projectIndex >= projects.size()) {
+            System.out.println(RED + "Invalid project selection.");
+            return;
+        }
+        Project projectToRemove = projects.remove(projectIndex);
+        System.out.println(GREEN + "Project removed successfully.");
+        rewrite();
     }
 
 
     private static void rewardStudent(Scanner scanner, Admin admin) {
-        loadCourses();
-        loadStudents();
-        System.out.println(YELLOW + "Rewarding a student: ");
-        System.out.print("Student ID: ");
-        String studentID = scanner.next();
-        System.out.print("Course ID: ");
-        String courseID = scanner.next();
-        Student student = students.stream().filter(st -> st.getID().equals(studentID)).findFirst().orElse(null);
-        Course course = courses.stream().filter(c -> c.getID().equals(courseID)).findFirst().orElse(null);
-
-        if (student != null && course != null) {
-            Teacher teacher = course.getTeacher();
-            if (teacher != null) {
-                teacher.rewardStudent(course, student, 1.0);
-                writeCourseMaps();
-                System.out.println(GREEN + "Student rewarded successfully!");
-            } else {
-                System.out.println(RED + "Teacher not found for the course.");
-            }
-        } else {
-            if (student == null) System.out.println(RED + "Student not found.");
-            if (course == null) System.out.println(RED + "Course not found.");
+        reload();
+        System.out.println(YELLOW + "Rewarding a student:");
+        if (courses.isEmpty()) {
+            System.out.println(RED + "No courses available.");
+            return;
         }
+
+        System.out.println("Select a course from the list:");
+        displayList(courses);
+        int courseIndex = scanner.nextInt() - 1;
+        if (courseIndex < 0 || courseIndex >= courses.size()) {
+            System.out.println(RED + "Invalid course selection.");
+            return;
+        }
+        Course selectedCourse = courses.get(courseIndex);
+
+        System.out.println("Select a student from the course:");
+        displayList(selectedCourse.getStudents());
+        int studentIndex = scanner.nextInt() - 1;
+        if (studentIndex < 0 || studentIndex >= selectedCourse.getStudents().size()) {
+            System.out.println(RED + "Invalid student selection.");
+            return;
+        }
+        Student selectedStudent = selectedCourse.getStudents().get(studentIndex);
+
+        selectedCourse.gradeStudent(selectedStudent, selectedCourse.getGrade(selectedStudent) + 1.0);
+
+        System.out.println(GREEN + "Student rewarded successfully with 5 points.");
+        rewrite();
     }
 
 
     private static void gradeStudent(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Grading a student: ");
-        System.out.print("Student ID: ");
-        String studentID = scanner.next();
-        System.out.print("Course ID: ");
-        String courseID = scanner.next();
-        System.out.print("Grade: ");
-        double grade = scanner.nextDouble();
-        Student student = admin.findStudentByID(studentID);
-        Course course = admin.findCourseByID(courseID);
-
-        if (student != null && course != null) {
-            admin.gradeStudent(course, student, grade);
-            System.out.println(GREEN + "Student graded successfully!");
-        } else {
-            if (student == null) System.out.println(RED + "Student not found.");
-            if (course == null) System.out.println(RED + "Course not found.");
+        reload();
+        System.out.println(YELLOW + "Grading a student:");
+        if (courses.isEmpty()) {
+            System.out.println(RED + "No courses available.");
+            return;
         }
+
+        System.out.println("Select a course from the list:");
+        displayList(courses);
+        int courseIndex = scanner.nextInt() - 1;
+        if (courseIndex < 0 || courseIndex >= courses.size()) {
+            System.out.println(RED + "Invalid course selection.");
+            return;
+        }
+        Course selectedCourse = courses.get(courseIndex);
+
+        System.out.println("Select a student from the course:");
+        displayList(selectedCourse.getStudents());
+        int studentIndex = scanner.nextInt() - 1;
+        if (studentIndex < 0 || studentIndex >= selectedCourse.getStudents().size()) {
+            System.out.println(RED + "Invalid student selection.");
+            return;
+        }
+        Student selectedStudent = selectedCourse.getStudents().get(studentIndex);
+
+        System.out.println("Enter the grade for the student:");
+        double grade = scanner.nextDouble();
+
+        double initialGrade = selectedCourse.getGrade(selectedStudent);
+        double finalGrade = initialGrade + grade >= 20 ? 20 : initialGrade + grade;
+        selectedCourse.gradeStudent(selectedStudent, finalGrade);
+
+        System.out.println(GREEN + "Student graded successfully with a grade of " + grade + ".");
+        rewrite();
     }
+
 
     private static void extendAssignmentDeadline(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Extending an assignment's deadline: ");
-        System.out.print("ID: ");
-        String ID = scanner.next();
-        System.out.print("Days to extend: ");
-        int days = scanner.nextInt();
-        Assignment assignment = admin.findAssignmentByID(ID);
-
-        if (assignment != null) {
-            assignment.extendDeadlineByDays(days);
-            System.out.println(GREEN + "Assignment deadline extended successfully!");
-        } else {
-            System.out.println(RED + "Assignment not found.");
+        reload();
+        System.out.println(YELLOW + "Extending an assignment's deadline:");
+        if (assignments.isEmpty()) {
+            System.out.println(RED + "No assignments available.");
+            return;
         }
+
+        System.out.println("Select an assignment from the list:");
+        displayList(assignments);
+        int assignmentIndex = scanner.nextInt() - 1;
+        if (assignmentIndex < 0 || assignmentIndex >= assignments.size()) {
+            System.out.println(RED + "Invalid assignment selection.");
+            return;
+        }
+        System.out.println("Enter the number of days to extend the deadline:");
+        int days = scanner.nextInt();
+        Assignment selectedAssignment = assignments.get(assignmentIndex);
+        selectedAssignment.extendDeadlineByDays(days);
+        System.out.println(GREEN + "Deadline extended successfully.");
+        rewrite();
     }
+
 
     private static void extendProjectDeadline(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Extending a project's deadline: ");
-        System.out.print("ID: ");
-        String ID = scanner.next();
-        System.out.print("Days to extend: ");
-        int days = scanner.nextInt();
-        Project project = admin.findProjectByID(ID);
-
-        if (project != null) {
-            project.extendDeadlineByDays(days);
-            System.out.println(GREEN + "Project deadline extended successfully!");
-        } else {
-            System.out.println(RED + "Project not found.");
+        reload();
+        System.out.println(YELLOW + "Extending a project's deadline:");
+        if (projects.isEmpty()) {
+            System.out.println(RED + "No projects available.");
+            return;
         }
+
+        System.out.println("Select a project from the list:");
+        displayList(projects);
+        int projectIndex = scanner.nextInt() - 1;
+        if (projectIndex < 0 || projectIndex >= projects.size()) {
+            System.out.println(RED + "Invalid project selection.");
+            return;
+        }
+        System.out.println("Enter the number of days to extend the deadline:");
+        int days = scanner.nextInt();
+        Project selectedProject = projects.get(projectIndex);
+        selectedProject.extendDeadlineByDays(days);
+        System.out.println(GREEN + "Deadline extended successfully.");
+        rewrite();
     }
+
 
     private static void activateAssignment(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Activating an assignment: ");
-        System.out.print("ID: ");
-        String ID = scanner.next();
-        Assignment assignment = admin.findAssignmentByID(ID);
-
-        if (assignment != null) {
-            assignment.setAvailable(true);
-            System.out.println(GREEN + "Assignment activated successfully!");
-        } else {
-            System.out.println(RED + "Assignment not found.");
+        reload();
+        System.out.println(YELLOW + "Activating an assignment:");
+        if (assignments.isEmpty()) {
+            System.out.println(RED + "No assignments available for activation.");
+            return;
         }
+
+        System.out.println("Select an assignment to activate from the list:");
+        displayList(assignments);
+        int assignmentIndex = scanner.nextInt() - 1;
+        if (assignmentIndex < 0 || assignmentIndex >= assignments.size()) {
+            System.out.println(RED + "Invalid assignment selection.");
+            return;
+        }
+        Assignment selectedAssignment = assignments.get(assignmentIndex);
+        selectedAssignment.setAvailable(true);
+        System.out.println(GREEN + "Assignment activated successfully.");
+        rewrite();
     }
+
 
     private static void activateProject(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Activating a project: ");
-        System.out.print("ID: ");
-        String ID = scanner.next();
-        Project project = admin.findProjectByID(ID);
-
-        if (project != null) {
-            project.setAvailable(true);
-            System.out.println(GREEN + "Project activated successfully!");
-        } else {
-            System.out.println(RED + "Project not found.");
+        reload();
+        System.out.println(YELLOW + "Activating a project:");
+        if (projects.isEmpty()) {
+            System.out.println(RED + "No projects available for activation.");
+            return;
         }
+
+        System.out.println("Select a project to activate from the list:");
+        displayList(projects);
+        int projectIndex = scanner.nextInt() - 1;
+        if (projectIndex < 0 || projectIndex >= projects.size()) {
+            System.out.println(RED + "Invalid project selection.");
+            return;
+        }
+        Project selectedProject = projects.get(projectIndex);
+        selectedProject.setAvailable(true);
+        System.out.println(GREEN + "Project activated successfully.");
+        rewrite();
     }
 
+
     private static void addStudentToCourse(Scanner scanner, Admin admin) {
-        loadStudents();
-        loadCourses();
+        reload();
         System.out.println(YELLOW + "Adding a student to a course: ");
         System.out.print("Student ID: ");
         String studentID = scanner.next();
         System.out.print("Course ID: ");
         String courseID = scanner.next();
-        Course course = courses.stream().filter(c -> c.getID().equals(courseID)).findFirst().get();
-        Student student = students.stream().filter(st -> st.getID().equals(studentID)).findFirst().get();
-
-        if (course != null && student != null) {
-            course.addStudent(student);
-            writeCourseMaps();
-            fileUtilsStudent.writeAll(students, STUDENTS_FILE);
-            System.out.println(GREEN + "Student added to the course successfully!");
-        } else {
-            if (course == null) System.out.println(RED + "Course not found.");
-            if (student == null) System.out.println(RED + "Student not found.");
-        }
-    }
-
-    private static void removeStudentFromCourse(Scanner scanner, Admin admin) {
-        System.out.println(YELLOW + "Removing a student from a course: ");
-        System.out.print("Student ID: ");
-        String studentID = scanner.next();
-        System.out.print("Course ID: ");
-        String courseID = scanner.next();
         Course course = courses.stream().filter(c -> c.getID().equals(courseID)).findFirst().orElse(null);
         Student student = students.stream().filter(st -> st.getID().equals(studentID)).findFirst().orElse(null);
 
         if (course != null && student != null) {
-            course.removeStudent(student);
-            writeCourseMaps();
-            student.removeCourse(course);
-            fileUtilsStudent.writeAll(students, STUDENTS_FILE);
-            System.out.println(GREEN + "Student removed from the course successfully!");
+            if (!student.getCourses().contains(course)) {
+                course.addStudent(student);
+                student.addCourse(course);
+                Teacher courseTeacher = course.getTeacher();
+                courseTeacher.addCourse(course);
+                System.out.println(GREEN + "Student added to the course successfully!");
+            } else {
+                System.out.println(RED + "Student is already enrolled in this course.");
+            }
         } else {
             if (course == null) System.out.println(RED + "Course not found.");
             if (student == null) System.out.println(RED + "Student not found.");
         }
+        rewrite();
+    }
+
+
+    private static void removeStudentFromCourse(Scanner scanner, Admin admin) {
+        reload();
+        System.out.println(YELLOW + "Removing a student from a course: ");
+        if (courses.isEmpty()) {
+            System.out.println(RED + "No courses available.");
+            return;
+        }
+
+        System.out.println("Select a course from the list:");
+        displayList(courses);
+        int courseIndex = scanner.nextInt() - 1;
+        if (courseIndex < 0 || courseIndex >= courses.size()) {
+            System.out.println(RED + "Invalid course selection.");
+            return;
+        }
+        Course selectedCourse = courses.get(courseIndex);
+
+        if (selectedCourse.getStudents().isEmpty()) {
+            System.out.println(RED + "No students enrolled in this course.");
+            return;
+        }
+
+        System.out.println("Select a student from the course to remove:");
+        displayList(selectedCourse.getStudents());
+        int studentIndex = scanner.nextInt() - 1;
+        if (studentIndex < 0 || studentIndex >= selectedCourse.getStudents().size()) {
+            System.out.println(RED + "Invalid student selection.");
+            return;
+        }
+        Student selectedStudent = selectedCourse.getStudents().get(studentIndex);
+
+        selectedCourse.removeStudent(selectedStudent);
+        System.out.println(GREEN + "Student removed from the course successfully.");
+        rewrite();
     }
 
 
     private static void displayList(List<?> list) {
-        if (list == null || list.isEmpty()) {
-            System.out.println(RED + "No items to display.");
-            return;
-        }
-
-        int i = 1;
-        for (Object obj : list) {
-            if (obj != null) {
-                System.out.println(i + " " + obj.toString());
-                i++;
+        int index = 1;
+        for (Object item : list) {
+            if (item instanceof Course) {
+                Course course = (Course) item;
+                System.out.println(index++ + ") " + course.getName() + ", ID: " + course.getID());
+            } else if (item instanceof Teacher) {
+                Teacher teacher = (Teacher) item;
+                System.out.println(index++ + ") " + teacher.getFirstName() + " " + teacher.getLastName() + ", ID: " + teacher.getID());
+            } else if (item instanceof Assignment) {
+                Assignment assignment = (Assignment) item;
+                System.out.println(index++ + ") " + "ID: " + assignment.getID());
+            } else if (item instanceof Project) {
+                Project project = (Project) item;
+                System.out.println(index++ + ") " + project.getName() + ", ID: " + project.getID());
+            } else if (item instanceof Student) {
+                Student student = (Student) item;
+                System.out.println(index++ + ") " + student.getFirstName() + " " + student.getLastName() + ", ID: " + student.getID());
+            } else {
+                System.out.println(index++ + ") " + item.toString());
             }
         }
     }
@@ -886,6 +985,28 @@ public class CLI {
             }
         } catch (IOException ignored) {
         }
+    }
+
+    private static void rewrite() {
+        fileUtilsTeacher.writeAll(teachers, TEACHERS_FILE);
+        fileUtilsStudent.writeAll(students, STUDENTS_FILE);
+        fileUtilsCourse.writeAll(courses, COURSES_FILE);
+        fileUtilsAssignment.writeAll(assignments, ASSIGNMENTS_FILE);
+        writeCourseMaps();
+    }
+
+    private static void removeCourseFromAllObjects(Course course) {
+        for (Teacher teacher : teachers) {
+            teacher.getCourses().remove(course);
+        }
+
+        assignments.removeIf(assignment -> assignment.getCourse().equals(course));
+
+        projects.removeIf(project -> project.getCourse().equals(course));
+        for (Student student : students) {
+            student.getCourses().remove(course);
+        }
+        rewrite();
     }
 
 }
