@@ -5,9 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Assignment implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public class Assignment {
     private final LocalDate creationDate;
     private LocalDate deadline;
     private boolean isAvailable;

@@ -267,7 +267,7 @@ public class CLI {
         clearScreen();
         displayWelcomeMessage();
 
-        int role = getRole(scanner);
+        int role = getValidatedInput(scanner, RED, 1, 2);
 
         clearScreen();
 
@@ -295,10 +295,6 @@ public class CLI {
     private static void displayWelcomeMessage() {
         System.out.println(BLUE + "Welcome to the CLI interface!");
         System.out.println(GREEN + "Choose your role:\n1) Teacher\n2) Admin");
-    }
-
-    private static int getRole(Scanner scanner) {
-        return getValidatedInput(scanner, RED, 1, 2);
     }
 
     private static void handleTeacher(Scanner scanner, Admin admin, String teacherID) throws FileNotFoundException {
@@ -466,11 +462,7 @@ public class CLI {
 
         System.out.println("Select a teacher to remove from the list:");
         displayList(teachers);
-        int teacherIndex = scanner.nextInt() - 1;
-        if (teacherIndex < 0 || teacherIndex >= teachers.size()) {
-            System.out.println(RED + "Invalid teacher selection.");
-            return;
-        }
+        int teacherIndex = getValidatedInput(scanner, RED, 1, teachers.size()) - 1;
         Teacher teacherToRemove = teachers.remove(teacherIndex);
 
         courses.forEach(course -> {
@@ -535,20 +527,9 @@ public class CLI {
         displayList(courses);
         System.out.print("Choose the course by entering the number: ");
         int choice;
-        try {
-            choice = scanner.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println(RED + "Invalid input. Please enter a number.");
-            scanner.nextLine();
-            return;
-        }
+        choice = getValidatedInput(scanner, RED, 1, courses.size());
 
         int index = choice - 1;
-
-        if (index < 0 || index >= courses.size()) {
-            System.out.println(RED + "Invalid course number. Please enter a number between 1 and " + courses.size() + ".");
-            return;
-        }
 
         Course courseToRemove = courses.get(index);
         removeCourseFromAllObjects(courseToRemove);
@@ -573,12 +554,16 @@ public class CLI {
         System.out.print("Semester: ");
         Semester semester = Semester.valueOf(scanner.nextLine().toUpperCase());
 
-        Student student = new Student(firstName, lastName, new ArrayList<>(), password.toCharArray(), ID, semester);
-        admin.getStudents().add(student);
-        students.add(student);
-
-        System.out.println(GREEN + "Student added successfully!");
-        rewrite();
+        boolean exists = students.stream().anyMatch(s -> s.getID().equals(ID));
+        if (!exists) {
+            Student student = new Student(firstName, lastName, new ArrayList<>(), password.toCharArray(), ID, semester);
+            admin.getStudents().add(student);
+            students.add(student);
+            System.out.println(GREEN + "Student added successfully!");
+            rewrite();
+        } else {
+            System.out.println(RED + "A student with this ID already exists.");
+        }
     }
 
     private static void removeStudent(Scanner scanner, Admin admin) {
@@ -591,11 +576,7 @@ public class CLI {
 
         System.out.println("Select a student from the list:");
         displayList(students);
-        int studentIndex = scanner.nextInt() - 1;
-        if (studentIndex < 0 || studentIndex >= students.size()) {
-            System.out.println(RED + "Invalid student selection.");
-            return;
-        }
+        int studentIndex = getValidatedInput(scanner, RED, 1, students.size()) - 1;
         Student studentToRemove = students.remove(studentIndex);
         System.out.println(GREEN + "Student removed successfully.");
         rewrite();
@@ -618,11 +599,7 @@ public class CLI {
         if (!exists) {
             System.out.print("Choose the course by entering the number: ");
             displayList(courses);
-            int chosenCourseNum = scanner.nextInt();
-            if (chosenCourseNum < 1 || chosenCourseNum > courses.size()) {
-                System.out.println(RED + "Invalid course number.");
-                return;
-            }
+            int chosenCourseNum = getValidatedInput(scanner, RED, 1, courses.size());
             Course chosenCourse = courses.get(chosenCourseNum - 1);
 
             Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse, ID);
@@ -646,11 +623,7 @@ public class CLI {
 
         System.out.println("Select an assignment from the list:");
         displayList(assignments);
-        int assignmentIndex = scanner.nextInt() - 1;
-        if (assignmentIndex < 0 || assignmentIndex >= assignments.size()) {
-            System.out.println(RED + "Invalid assignment selection.");
-            return;
-        }
+        int assignmentIndex = getValidatedInput(scanner, RED, 1, assignments.size()) - 1;
         Assignment assignmentToRemove = assignments.remove(assignmentIndex);
         System.out.println(GREEN + "Assignment removed successfully.");
         rewrite();
@@ -675,11 +648,7 @@ public class CLI {
         if (!exists) {
             System.out.print("Choose the course by entering the number: ");
             displayList(courses);
-            int chosenCourseNum = scanner.nextInt();
-            if (chosenCourseNum < 1 || chosenCourseNum > courses.size()) {
-                System.out.println(RED + "Invalid course number.");
-                return;
-            }
+            int chosenCourseNum = getValidatedInput(scanner, RED, 1, courses.size());
             Course chosenCourse = courses.get(chosenCourseNum - 1);
 
             Project project = new Project(deadline, isAvailable, chosenCourse, ID, name);
@@ -703,11 +672,7 @@ public class CLI {
 
         System.out.println("Select a project from the list:");
         displayList(projects);
-        int projectIndex = scanner.nextInt() - 1;
-        if (projectIndex < 0 || projectIndex >= projects.size()) {
-            System.out.println(RED + "Invalid project selection.");
-            return;
-        }
+        int projectIndex = getValidatedInput(scanner, RED, 1, projects.size()) - 1;
         Project projectToRemove = projects.remove(projectIndex);
         System.out.println(GREEN + "Project removed successfully.");
         rewrite();
@@ -724,20 +689,12 @@ public class CLI {
 
         System.out.println("Select a course from the list:");
         displayList(courses);
-        int courseIndex = scanner.nextInt() - 1;
-        if (courseIndex < 0 || courseIndex >= courses.size()) {
-            System.out.println(RED + "Invalid course selection.");
-            return;
-        }
+        int courseIndex = getValidatedInput(scanner, RED, 1, courses.size()) - 1;
         Course selectedCourse = courses.get(courseIndex);
 
         System.out.println("Select a student from the course:");
         displayList(selectedCourse.getStudents());
-        int studentIndex = scanner.nextInt() - 1;
-        if (studentIndex < 0 || studentIndex >= selectedCourse.getStudents().size()) {
-            System.out.println(RED + "Invalid student selection.");
-            return;
-        }
+        int studentIndex = getValidatedInput(scanner, RED, 1, selectedCourse.getStudents().size()) - 1;
         Student selectedStudent = selectedCourse.getStudents().get(studentIndex);
 
         selectedCourse.gradeStudent(selectedStudent, selectedCourse.getGrade(selectedStudent) + 1.0);
@@ -757,20 +714,12 @@ public class CLI {
 
         System.out.println("Select a course from the list:");
         displayList(courses);
-        int courseIndex = scanner.nextInt() - 1;
-        if (courseIndex < 0 || courseIndex >= courses.size()) {
-            System.out.println(RED + "Invalid course selection.");
-            return;
-        }
+        int courseIndex = getValidatedInput(scanner, RED, 1, courses.size()) - 1;
         Course selectedCourse = courses.get(courseIndex);
 
         System.out.println("Select a student from the course:");
         displayList(selectedCourse.getStudents());
-        int studentIndex = scanner.nextInt() - 1;
-        if (studentIndex < 0 || studentIndex >= selectedCourse.getStudents().size()) {
-            System.out.println(RED + "Invalid student selection.");
-            return;
-        }
+        int studentIndex = getValidatedInput(scanner, RED, 1, selectedCourse.getStudents().size()) - 1;
         Student selectedStudent = selectedCourse.getStudents().get(studentIndex);
 
         System.out.println("Enter the grade for the student:");
@@ -795,11 +744,7 @@ public class CLI {
 
         System.out.println("Select an assignment from the list:");
         displayList(assignments);
-        int assignmentIndex = scanner.nextInt() - 1;
-        if (assignmentIndex < 0 || assignmentIndex >= assignments.size()) {
-            System.out.println(RED + "Invalid assignment selection.");
-            return;
-        }
+        int assignmentIndex = getValidatedInput(scanner, RED, 1, assignments.size()) - 1;
         System.out.println("Enter the number of days to extend the deadline:");
         int days = scanner.nextInt();
         Assignment selectedAssignment = assignments.get(assignmentIndex);
@@ -819,11 +764,7 @@ public class CLI {
 
         System.out.println("Select a project from the list:");
         displayList(projects);
-        int projectIndex = scanner.nextInt() - 1;
-        if (projectIndex < 0 || projectIndex >= projects.size()) {
-            System.out.println(RED + "Invalid project selection.");
-            return;
-        }
+        int projectIndex = getValidatedInput(scanner, RED, 1, projects.size()) - 1;
         System.out.println("Enter the number of days to extend the deadline:");
         int days = scanner.nextInt();
         Project selectedProject = projects.get(projectIndex);
@@ -843,11 +784,7 @@ public class CLI {
 
         System.out.println("Select an assignment to activate from the list:");
         displayList(assignments);
-        int assignmentIndex = scanner.nextInt() - 1;
-        if (assignmentIndex < 0 || assignmentIndex >= assignments.size()) {
-            System.out.println(RED + "Invalid assignment selection.");
-            return;
-        }
+        int assignmentIndex = getValidatedInput(scanner, RED, 1, assignments.size()) - 1;
         Assignment selectedAssignment = assignments.get(assignmentIndex);
         selectedAssignment.setAvailable(true);
         System.out.println(GREEN + "Assignment activated successfully.");
@@ -865,11 +802,7 @@ public class CLI {
 
         System.out.println("Select a project to activate from the list:");
         displayList(projects);
-        int projectIndex = scanner.nextInt() - 1;
-        if (projectIndex < 0 || projectIndex >= projects.size()) {
-            System.out.println(RED + "Invalid project selection.");
-            return;
-        }
+        int projectIndex = getValidatedInput(scanner, RED, 1, projects.size()) - 1;
         Project selectedProject = projects.get(projectIndex);
         selectedProject.setAvailable(true);
         System.out.println(GREEN + "Project activated successfully.");
@@ -879,28 +812,40 @@ public class CLI {
 
     private static void addStudentToCourse(Scanner scanner, Admin admin) {
         reload();
-        System.out.println(YELLOW + "Adding a student to a course: ");
-        System.out.print("Student ID: ");
-        String studentID = scanner.next();
-        System.out.print("Course ID: ");
-        String courseID = scanner.next();
-        Course course = courses.stream().filter(c -> c.getID().equals(courseID)).findFirst().orElse(null);
-        Student student = students.stream().filter(st -> st.getID().equals(studentID)).findFirst().orElse(null);
+        System.out.println(YELLOW + "Adding a student to a course:");
 
-        if (course != null && student != null) {
-            if (!student.getCourses().contains(course)) {
-                course.addStudent(student);
-                student.addCourse(course);
-                Teacher courseTeacher = course.getTeacher();
-                courseTeacher.addCourse(course);
-                System.out.println(GREEN + "Student added to the course successfully!");
-            } else {
-                System.out.println(RED + "Student is already enrolled in this course.");
-            }
-        } else {
-            if (course == null) System.out.println(RED + "Course not found.");
-            if (student == null) System.out.println(RED + "Student not found.");
+        if (students.isEmpty()) {
+            System.out.println(RED + "No students available.");
+            return;
         }
+
+        System.out.println("Select a student from the list:");
+        displayList(students);
+        int studentIndex = getValidatedInput(scanner, RED, 1, students.size()) - 1;
+        Student selectedStudent = students.get(studentIndex);
+
+        if (courses.isEmpty()) {
+            System.out.println(RED + "No courses available.");
+            return;
+        }
+
+        System.out.println("Select a course from the list:");
+        displayList(courses);
+        int courseIndex = getValidatedInput(scanner, RED, 1, courses.size()) - 1;
+        Course selectedCourse = courses.get(courseIndex);
+
+        if (!selectedStudent.getCourses().contains(selectedCourse)) {
+            selectedCourse.addStudent(selectedStudent);
+            selectedStudent.addCourse(selectedCourse);
+            Teacher courseTeacher = selectedCourse.getTeacher();
+            if (courseTeacher != null) {
+                courseTeacher.addCourse(selectedCourse);
+            }
+            System.out.println(GREEN + "Student added to the course successfully!");
+        } else {
+            System.out.println(RED + "Student is already enrolled in this course.");
+        }
+
         rewrite();
     }
 
@@ -915,11 +860,7 @@ public class CLI {
 
         System.out.println("Select a course from the list:");
         displayList(courses);
-        int courseIndex = scanner.nextInt() - 1;
-        if (courseIndex < 0 || courseIndex >= courses.size()) {
-            System.out.println(RED + "Invalid course selection.");
-            return;
-        }
+        int courseIndex = getValidatedInput(scanner, RED, 1, courses.size()) - 1;
         Course selectedCourse = courses.get(courseIndex);
 
         if (selectedCourse.getStudents().isEmpty()) {
@@ -929,11 +870,7 @@ public class CLI {
 
         System.out.println("Select a student from the course to remove:");
         displayList(selectedCourse.getStudents());
-        int studentIndex = scanner.nextInt() - 1;
-        if (studentIndex < 0 || studentIndex >= selectedCourse.getStudents().size()) {
-            System.out.println(RED + "Invalid student selection.");
-            return;
-        }
+        int studentIndex = getValidatedInput(scanner, RED, 1, selectedCourse.getStudents().size()) - 1;
         Student selectedStudent = selectedCourse.getStudents().get(studentIndex);
 
         selectedCourse.removeStudent(selectedStudent);
@@ -992,6 +929,7 @@ public class CLI {
         fileUtilsStudent.writeAll(students, STUDENTS_FILE);
         fileUtilsCourse.writeAll(courses, COURSES_FILE);
         fileUtilsAssignment.writeAll(assignments, ASSIGNMENTS_FILE);
+        fileUtilsProject.writeAll(projects, PROJECTS_FILE);
         writeCourseMaps();
     }
 

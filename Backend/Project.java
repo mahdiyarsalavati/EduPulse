@@ -19,6 +19,6 @@ public class Project extends Assignment {
 
     @Override
     public String toString() {
-        return getDeadline() + "," + isAvailable() + "," + getID() + "," + name;
+        return getDeadline() + "," + isAvailable() + "," + getCourse().getID() + "," + getID() + "," + name;
     }
 }

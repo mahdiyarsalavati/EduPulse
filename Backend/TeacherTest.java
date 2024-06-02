@@ -66,9 +66,9 @@ public class TeacherTest {
     @Test
     public void gradeStudentTest() {
         teacher.addStudent(course1, student1); // Credit Unit = 3
-        teacher.addStudent(course1, student2); // Credit Unit = 4
+        teacher.addStudent(course1, student2);
 
-        teacher.addStudent(course2, student1);
+        teacher.addStudent(course2, student1); // Credit Unit = 4
         teacher.addStudent(course2, student2);
 
         teacher.gradeStudent(course1, student1, 18);
