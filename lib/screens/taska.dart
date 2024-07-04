@@ -54,9 +54,7 @@ class _TaskaState extends State<Taska> {
         actions: [
           IconButton(
             icon: Icon(CupertinoIcons.person_circle),
-            onPressed: () {
-              // Navigate to user profile page
-            },
+            onPressed: () {},
           )
         ],
       ),
@@ -78,7 +76,7 @@ class _TaskaState extends State<Taska> {
         child: Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2, // Highlight the Tasks tab
+        currentIndex: 2,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -102,7 +100,6 @@ class _TaskaState extends State<Taska> {
           ),
         ],
         onTap: (index) {
-          // Handle bottom navigation tap
         },
       ),
     );

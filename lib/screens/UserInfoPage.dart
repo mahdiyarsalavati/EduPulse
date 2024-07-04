@@ -48,7 +48,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
     if (pickedFile != null) {
       setState(() {
         _avatarUrl =
-            pickedFile.path; // Setting the image path to the state variable
+            pickedFile.path;
       });
     }
   }
