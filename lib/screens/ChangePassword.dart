@@ -22,9 +22,18 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     if (value.length < 8) {
       return 'رمز عبور باید حداقل 8 کاراکتر باشد';
     }
-    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d!@#\$&*~]{8,}$')
-        .hasMatch(value)) {
-      return 'رمز عبور باید شامل حداقل یک حرف بزرگ، یک حرف کوچک و یک عدد باشد';
+    bool hasUppercase = value.contains(RegExp(r'[A-Z]'));
+    bool hasLowercase = value.contains(RegExp(r'[a-z]'));
+    bool hasDigit = value.contains(RegExp(r'\d'));
+
+    if (!hasUppercase) {
+      return 'رمز عبور باید شامل حداقل یک حرف بزرگ باشد';
+    }
+    if (!hasLowercase) {
+      return 'رمز عبور باید شامل حداقل یک حرف کوچک باشد';
+    }
+    if (!hasDigit) {
+      return 'رمز عبور باید شامل حداقل یک عدد باشد';
     }
     return null;
   }
@@ -77,7 +86,9 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 decoration: InputDecoration(
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? CupertinoIcons.eye : CupertinoIcons.eye_slash,
+                      _obscurePassword
+                          ? CupertinoIcons.eye
+                          : CupertinoIcons.eye_slash,
                     ),
                     onPressed: _togglePasswordVisibility,
                   ),
