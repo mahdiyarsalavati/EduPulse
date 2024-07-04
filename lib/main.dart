@@ -1,12 +1,33 @@
-import 'package:EDUPULSE/screens/onboding/welcomePage.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'screens/InitialPage.dart';
 
-void main() {
-  runApp(const EDUPULSE());
+class SocketSingleton {
+  static final SocketSingleton _instance = SocketSingleton._internal();
+  late Socket socket;
+
+  factory SocketSingleton() {
+    return _instance;
+  }
+
+  SocketSingleton._internal();
+
+  Future<void> connect() async {
+    socket = await Socket.connect('127.0.0.1', 12345);
+  }
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final socketSingleton = SocketSingleton();
+  await socketSingleton.connect();
+  runApp(EDUPULSE(socketSingleton: socketSingleton));
 }
 
 class EDUPULSE extends StatelessWidget {
-  const EDUPULSE({super.key});
+  final SocketSingleton socketSingleton;
+
+  const EDUPULSE({Key? key, required this.socketSingleton}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +50,7 @@ class EDUPULSE extends StatelessWidget {
           errorBorder: defaultInputBorder,
         ),
       ),
-      home: const WelcomePage(),
+      home: InitialPage(),
     );
   }
 }

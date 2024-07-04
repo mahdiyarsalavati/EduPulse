@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'onboding/welcomePage.dart';
+import 'InitialPage.dart';
 
 class RemoveAccountPage extends StatelessWidget {
   const RemoveAccountPage({super.key});
@@ -9,7 +9,7 @@ class RemoveAccountPage extends StatelessWidget {
   void _removeAccount(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => WelcomePage()),
+      MaterialPageRoute(builder: (context) => InitialPage()),
     );
   }
 
