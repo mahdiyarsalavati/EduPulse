@@ -189,7 +189,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ...widget.activeAssignments
                     .map((assignment) =>
-                        _buildTaskCard(assignment, isActive: true))
+                    _buildTaskCard(assignment, isActive: true))
                     .toList(),
                 SizedBox(height: 50),
                 Center(
@@ -204,7 +204,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ...widget.notActiveAssignments
                     .map((assignment) =>
-                        _buildTaskCard(assignment, isActive: false))
+                    _buildTaskCard(assignment, isActive: false))
                     .toList(),
                 SizedBox(height: 200)
               ],
@@ -243,18 +243,18 @@ class _HomePageState extends State<HomePage> {
         title: Text(task),
         trailing: isActive
             ? IconButton(
-                icon: Icon(CupertinoIcons.check_mark_circled,
-                    color: Colors.blueAccent),
-                onPressed: () {
-                  _completeTask(task);
-                },
-              )
+          icon: Icon(CupertinoIcons.check_mark_circled,
+              color: Colors.blueAccent),
+          onPressed: () {
+            _completeTask(task);
+          },
+        )
             : IconButton(
-                icon: Icon(CupertinoIcons.clear_circled, color: Colors.red),
-                onPressed: () {
-                  _revertTask(task);
-                },
-              ),
+          icon: Icon(CupertinoIcons.clear_circled, color: Colors.red),
+          onPressed: () {
+            _revertTask(task);
+          },
+        ),
       ),
     );
   }

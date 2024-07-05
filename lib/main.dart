@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:EDUPULSE/screens/InitialPage.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize timezone data
+  tz.initializeTimeZones();
+  final String timeZoneName = await tz.local.name;
+  tz.setLocalLocation(tz.getLocation(timeZoneName));
+
+  // Initialize notification settings for iOS
+  const DarwinInitializationSettings initializationSettingsIOS =
+      DarwinInitializationSettings();
+
+  final InitializationSettings initializationSettings = InitializationSettings(
+    iOS: initializationSettingsIOS,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
   runApp(MyApp());
 }
 
