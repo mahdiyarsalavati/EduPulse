@@ -53,8 +53,10 @@ class _LoginPageState extends State<LoginPage> {
       final numberOfExams = int.parse(parts[4]);
       final highestGrade = double.parse(parts[5]);
       final lowestGrade = double.parse(parts[6]);
-      final activeAssignments = parts.sublist(7, parts.indexOf('END_ACTIVE')).toList();
-      final notActiveAssignments = parts.sublist(parts.indexOf('END_ACTIVE') + 1).toList();
+      final activeAssignments =
+          parts.sublist(7, parts.indexOf('END_ACTIVE')).toList();
+      final notActiveAssignments =
+          parts.sublist(parts.indexOf('END_ACTIVE') + 1).toList();
 
       Navigator.pushReplacement(
         context,
@@ -73,16 +75,17 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       );
-    } else {
+    } else if (response == "LOGIN_FAILED") {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed. Please try again.')),
+        SnackBar(content: Text('ورود ناموفق بود. دوباره تلاش کنید.')),
       );
     }
   }
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      _socket.write('LOGIN ${_usernameController.text} ${_passwordController.text}\n');
+      _socket.write(
+          'LOGIN ${_usernameController.text} ${_passwordController.text}\n');
     }
   }
 
@@ -108,9 +111,11 @@ class _LoginPageState extends State<LoginPage> {
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("ورود", style: TextStyle(fontFamily: "Badee", fontSize: 100)),
+                      const Text("ورود",
+                          style: TextStyle(fontFamily: "Badee", fontSize: 100)),
                       const SizedBox(width: 15),
-                      const Icon(CupertinoIcons.person_alt_circle, size: 70, color: Colors.blueAccent),
+                      const Icon(CupertinoIcons.person_alt_circle,
+                          size: 70, color: Colors.blueAccent),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -126,7 +131,8 @@ class _LoginPageState extends State<LoginPage> {
                       labelText: "نام کاربری",
                       prefixIcon: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Icon(CupertinoIcons.person_alt_circle, color: Colors.blueAccent),
+                        child: Icon(CupertinoIcons.person_alt_circle,
+                            color: Colors.blueAccent),
                       ),
                     ),
                     validator: _validateUsername,
@@ -139,11 +145,14 @@ class _LoginPageState extends State<LoginPage> {
                       labelText: "رمز عبور",
                       prefixIcon: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Icon(CupertinoIcons.lock, color: Colors.blueAccent),
+                        child:
+                            Icon(CupertinoIcons.lock, color: Colors.blueAccent),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureText ? CupertinoIcons.eye : CupertinoIcons.eye_slash,
+                          _obscureText
+                              ? CupertinoIcons.eye
+                              : CupertinoIcons.eye_slash,
                           color: Colors.blueAccent,
                         ),
                         onPressed: _toggleObscureText,
@@ -159,7 +168,8 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     onPressed: _submit,
                     icon: const Icon(CupertinoIcons.person_alt_circle),
-                    label: const Text("ورود", style: TextStyle(color: Colors.white)),
+                    label: const Text("ورود",
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),
@@ -195,7 +205,8 @@ class _LoginPageState extends State<LoginPage> {
       return 'رمز عبور باید شامل حرف بزرگ، حرف کوچک و عدد باشد';
     }
 
-    if (_usernameController.text.isNotEmpty && value.contains(_usernameController.text)) {
+    if (_usernameController.text.isNotEmpty &&
+        value.contains(_usernameController.text)) {
       return 'رمز عبور نباید شامل نام کاربری باشد';
     }
     return null;

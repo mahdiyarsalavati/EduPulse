@@ -1,34 +1,12 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'screens/InitialPage.dart';
-
-class SocketSingleton {
-  static final SocketSingleton _instance = SocketSingleton._internal();
-  late Socket socket;
-
-  factory SocketSingleton() {
-    return _instance;
-  }
-
-  SocketSingleton._internal();
-
-  Future<void> connect() async {
-    socket = await Socket.connect('127.0.0.1', 12345);
-  }
-}
+import 'package:EDUPULSE/screens/InitialPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final socketSingleton = SocketSingleton();
-  await socketSingleton.connect();
-  runApp(EDUPULSE(socketSingleton: socketSingleton));
+  runApp(MyApp());
 }
 
-class EDUPULSE extends StatelessWidget {
-  final SocketSingleton socketSingleton;
-
-  const EDUPULSE({Key? key, required this.socketSingleton}) : super(key: key);
-
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
