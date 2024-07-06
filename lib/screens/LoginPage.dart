@@ -28,7 +28,6 @@ class _LoginPageState extends State<LoginPage> {
       final response = String.fromCharCodes(event).trim();
       _handleSocketResponse(response);
     }, onError: (error) {
-      print('Socket error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text('ارتباط موفقیت آمیز نبود.',
@@ -47,20 +46,6 @@ class _LoginPageState extends State<LoginPage> {
 
   void _handleSocketResponse(String response) async {
     if (response.startsWith('LOGIN_SUCCESS')) {
-      _socket.write('GET_HOMEPAGE_DATA ${_usernameController.text}\n');
-    } else if (response.startsWith('HOMEPAGE_DATA')) {
-      final parts = response.split(' ');
-      final firstName = parts[1];
-      final lastName = parts[2];
-      final numberOfAssignments = int.parse(parts[3]);
-      final numberOfExams = int.parse(parts[4]);
-      final highestGrade = double.parse(parts[5]);
-      final lowestGrade = double.parse(parts[6]);
-      final activeAssignments =
-          parts.sublist(7, parts.indexOf('END_ACTIVE')).toList();
-      final notActiveAssignments =
-          parts.sublist(parts.indexOf('END_ACTIVE') + 1).toList();
-
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('username', _usernameController.text);
       await prefs.setString('password', _passwordController.text);
@@ -68,18 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomePage(
-            socket: _socket,
-            username: _usernameController.text,
-            firstName: firstName,
-            lastName: lastName,
-            numberOfAssignments: numberOfAssignments,
-            numberOfExams: numberOfExams,
-            highestGrade: highestGrade,
-            lowestGrade: lowestGrade,
-            activeAssignments: activeAssignments,
-            notActiveAssignments: notActiveAssignments,
-          ),
+          builder: (context) => HomePage(),
         ),
       );
     } else if (response == "LOGIN_FAILED") {
@@ -155,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
                       prefixIcon: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child:
-                            Icon(CupertinoIcons.lock, color: Colors.blueAccent),
+                        Icon(CupertinoIcons.lock, color: Colors.blueAccent),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(

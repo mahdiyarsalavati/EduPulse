@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:EDUPULSE/screens/AssignmentsPage.dart';
 import 'package:EDUPULSE/screens/CoursesPage.dart';
+import 'package:EDUPULSE/screens/NewsPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,38 +9,23 @@ import 'ToDoPage.dart';
 import 'UserInfoPage.dart';
 
 class HomePage extends StatefulWidget {
-  final Socket socket;
-  final String username;
-  final String firstName;
-  final String lastName;
-  final int numberOfAssignments;
-  final int numberOfExams;
-  final double highestGrade;
-  final double lowestGrade;
-  final List<String> activeAssignments;
-  final List<String> notActiveAssignments;
-
-  const HomePage({
-    Key? key,
-    required this.socket,
-    required this.username,
-    required this.firstName,
-    required this.lastName,
-    required this.numberOfAssignments,
-    required this.numberOfExams,
-    required this.highestGrade,
-    required this.lowestGrade,
-    required this.activeAssignments,
-    required this.notActiveAssignments,
-  }) : super(key: key);
-
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  List<String> tasks = [];
+  late Socket _socket;
+  String _username = '';
+  String _firstName = '';
+  String _lastName = '';
+  int _numberOfAssignments = 0;
+  int _numberOfExams = 0;
+  double _highestGrade = 0.0;
+  double _lowestGrade = 0.0;
+  List<String> _activeAssignments = [];
+  List<String> _notActiveAssignments = [];
+  int _completedAssignments = 0;
 
   static const List<String> _pageTitles = [
     'سرا',
@@ -59,6 +45,97 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString('username');
+    String? password = prefs.getString('password');
+
+    if (username != null && password != null) {
+      try {
+        _socket = await Socket.connect('127.0.0.1', 12345);
+        await _autoLogin(username, password);
+      } catch (e) {
+      }
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  Future<void> _autoLogin(String username, String password) async {
+    _socket.write('LOGIN $username $password\n');
+
+    _socket.listen((List<int> event) async {
+      final response = String.fromCharCodes(event).trim();
+      if (response.startsWith('LOGIN_SUCCESS')) {
+        _socket.write('GET_HOMEPAGE_DATA $username\n');
+      } else if (response.startsWith('HOMEPAGE_DATA')) {
+        final parts = response.split(' ');
+        setState(() {
+          _username = username;
+          _firstName = parts[1];
+          _lastName = parts[2];
+          _numberOfAssignments = int.parse(parts[3]);
+          _numberOfExams = int.parse(parts[4]);
+          _highestGrade = double.parse(parts[5]);
+          _lowestGrade = double.parse(parts[6]);
+          _activeAssignments =
+              parts.sublist(7, parts.indexOf('END_ACTIVE')).toList();
+          _notActiveAssignments =
+              parts.sublist(parts.indexOf('END_ACTIVE') + 1).toList();
+          _completedAssignments = _notActiveAssignments.length;
+        });
+      } else {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    });
+  }
+
+  Future<void> fetchData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString('username');
+    String? password = prefs.getString('password');
+
+    if (username != null && password != null) {
+      try {
+        _socket = await Socket.connect('127.0.0.1', 12345);
+        _socket.write('LOGIN $username $password\n');
+
+        _socket.listen((List<int> event) async {
+          final response = String.fromCharCodes(event).trim();
+          if (response.startsWith('LOGIN_SUCCESS')) {
+            _socket.write('GET_HOMEPAGE_DATA $username\n');
+          } else if (response.startsWith('HOMEPAGE_DATA')) {
+            final parts = response.split(' ');
+            setState(() {
+              _username = username;
+              _firstName = parts[1];
+              _lastName = parts[2];
+              _numberOfAssignments = int.parse(parts[3]);
+              _numberOfExams = int.parse(parts[4]);
+              _highestGrade = double.parse(parts[5]);
+              _lowestGrade = double.parse(parts[6]);
+              _activeAssignments =
+                  parts.sublist(7, parts.indexOf('END_ACTIVE')).toList();
+              _notActiveAssignments =
+                  parts.sublist(parts.indexOf('END_ACTIVE') + 1).toList();
+              _completedAssignments = _notActiveAssignments.length;
+            });
+          } else {
+            Navigator.pushReplacementNamed(context, '/login');
+          }
+        });
+      } catch (e) {
+      }
+    }
+  }
+
+  void _incrementCompletedAssignments() {
+    setState(() {
+      _completedAssignments++;
+    });
   }
 
   @override
@@ -74,9 +151,9 @@ class _HomePageState extends State<HomePage> {
               context,
               MaterialPageRoute(
                 builder: (context) => UserInfoPage(
-                  firstName: widget.firstName,
-                  lastName: widget.lastName,
-                  username: widget.username,
+                  firstName: _firstName,
+                  lastName: _lastName,
+                  username: _username,
                 ),
               ),
             );
@@ -111,13 +188,17 @@ class _HomePageState extends State<HomePage> {
   Widget _buildPageContent() {
     switch (_selectedIndex) {
       case 1:
-        return TodoScreen(
-          username: widget.username,
-        );
+        return TodoScreen(username: _username);
       case 2:
-        return CoursesPage(username: widget.username);
+        return CoursesPage(username: _username);
+      case 3:
+        return NewsPage();
       case 4:
-        return AssignmentPage(username: widget.username);
+        return AssignmentPage(
+          username: _username,
+          onAssignmentCompleted: _incrementCompletedAssignments,
+        );
+
       default:
         return SingleChildScrollView(
           child: SafeArea(
@@ -138,25 +219,26 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       _buildSummaryCard(
                         'امتحان داری',
-                        toPersian(widget.numberOfExams.toString()),
+                        toPersian(_numberOfExams.toString()),
                         CupertinoIcons.pencil_outline,
                         Colors.deepPurple,
                       ),
                       _buildSummaryCard(
                         'تمرین داری',
-                        toPersian(widget.numberOfAssignments.toString()),
+                        toPersian((_numberOfAssignments - _completedAssignments)
+                            .toString()),
                         CupertinoIcons.rectangle_paperclip,
                         Colors.blueAccent,
                       ),
                       _buildSummaryCard(
                         'بدترین نمره',
-                        toPersian(widget.lowestGrade.toString()),
+                        toPersian(_lowestGrade.toString()),
                         CupertinoIcons.battery_25,
                         Colors.red,
                       ),
                       _buildSummaryCard(
                         'بهترین نمره',
-                        toPersian(widget.highestGrade.toString()),
+                        toPersian(_highestGrade.toString()),
                         CupertinoIcons.chart_bar_fill,
                         Colors.green,
                       ),
@@ -166,10 +248,10 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(height: 30),
                 _buildSectionTitle('تسک های جاری'),
                 SizedBox(height: 10),
-                isStringListEmpty(widget.activeAssignments)
+                isStringListEmpty(_activeAssignments)
                     ? Center(child: Text('تسکی وجود نداره'))
                     : Column(
-                        children: widget.activeAssignments
+                        children: _activeAssignments
                             .map((assignment) =>
                                 _buildTaskCard(assignment, isActive: true))
                             .toList(),
@@ -177,10 +259,10 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(height: 40),
                 _buildSectionTitle('کارهای انجام شده'),
                 SizedBox(height: 10),
-                widget.notActiveAssignments.isEmpty
+                _notActiveAssignments.isEmpty
                     ? Center(child: Text('تسکی وجود نداره'))
                     : Column(
-                        children: widget.notActiveAssignments
+                        children: _notActiveAssignments
                             .map((assignment) =>
                                 _buildTaskCard(assignment, isActive: false))
                             .toList(),
@@ -261,15 +343,15 @@ class _HomePageState extends State<HomePage> {
 
   void _completeTask(String task) {
     setState(() {
-      widget.activeAssignments.remove(task);
-      widget.notActiveAssignments.add(task);
+      _activeAssignments.remove(task);
+      _notActiveAssignments.add(task);
     });
   }
 
   void _revertTask(String task) {
     setState(() {
-      widget.notActiveAssignments.remove(task);
-      widget.activeAssignments.add(task);
+      _notActiveAssignments.remove(task);
+      _activeAssignments.add(task);
     });
   }
 
@@ -328,10 +410,10 @@ class _HomePageState extends State<HomePage> {
 
     return result;
   }
-}
 
-bool isStringListEmpty(List<String> list) {
-  if (list.isEmpty) return true;
-  if (list[0].length == 0) return true;
-  return false;
+  bool isStringListEmpty(List<String> list) {
+    if (list.isEmpty) return true;
+    if (list[0].length == 0) return true;
+    return false;
+  }
 }

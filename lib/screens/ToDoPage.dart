@@ -17,7 +17,7 @@ class TodoScreen extends StatefulWidget {
 class _TodoScreenState extends State<TodoScreen> {
   final List<Map<String, dynamic>> _tasks = [];
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
@@ -28,9 +28,10 @@ class _TodoScreenState extends State<TodoScreen> {
 
   void _initializeNotifications() async {
     const DarwinInitializationSettings initializationSettingsIOS =
-    DarwinInitializationSettings();
+        DarwinInitializationSettings();
 
-    final InitializationSettings initializationSettings = InitializationSettings(
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
       iOS: initializationSettingsIOS,
     );
 
@@ -57,12 +58,26 @@ class _TodoScreenState extends State<TodoScreen> {
     await prefs.setString('tasks_${widget.username}', tasksString);
   }
 
+  Future<void> _deleteTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('tasks_${widget.username}');
+    setState(() {
+      _tasks.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('کارهای امروز'),
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: _confirmDeleteTasks,
+          ),
+        ],
       ),
       body: ListView.builder(
         itemCount: _tasks.length,
@@ -189,7 +204,7 @@ class _TodoScreenState extends State<TodoScreen> {
                   _selectedTime.minute,
                 );
                 final formattedDateTime =
-                DateFormat('yyyy-MM-dd – kk:mm').format(dateTime);
+                    DateFormat('yyyy-MM-dd – kk:mm').format(dateTime);
                 if (title.isNotEmpty) {
                   _addTask(title, formattedDateTime);
                   _scheduleNotification(title, dateTime);
@@ -214,7 +229,7 @@ class _TodoScreenState extends State<TodoScreen> {
   void _scheduleNotification(String title, DateTime scheduledTime) async {
     final int notificationId = _tasks.length;
     final tz.TZDateTime scheduledTZDateTime =
-    tz.TZDateTime.from(scheduledTime, tz.local);
+        tz.TZDateTime.from(scheduledTime, tz.local);
 
     await flutterLocalNotificationsPlugin.zonedSchedule(
       notificationId,
@@ -226,7 +241,37 @@ class _TodoScreenState extends State<TodoScreen> {
       ),
       androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation:
-      UILocalNotificationDateInterpretation.absoluteTime,
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+
+  void _confirmDeleteTasks() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('حذف تمام کارها'),
+          content:
+              Text('آیا مطمئن هستید که می‌خواهید تمام کارهای خود را حذف کنید؟'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('لغو'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await _deleteTasks();
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('تمام کارها حذف شدند'),
+                  backgroundColor: Colors.red,
+                ));
+              },
+              child: Text('حذف'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

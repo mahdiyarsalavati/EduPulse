@@ -30,7 +30,6 @@ class _CoursesPageState extends State<CoursesPage> {
 
   void _fetchCourses() {
     _socket.write('GET_COURSES_OF_STUDENT ${widget.username}\n');
-    _socket.flush();
     _socket.listen((data) {
       String response = String.fromCharCodes(data).trim();
       if (response.isNotEmpty) {
@@ -47,7 +46,7 @@ class _CoursesPageState extends State<CoursesPage> {
 
   void _requestJoinCourse(String courseCode) async {
     setState(() {
-      _pendingCourses.add(Course(courseCode, '...', 0, '...', true));
+      _pendingCourses.add(Course(courseCode, '...', '0', 0, '...', true));
     });
     Socket socket = await Socket.connect('127.0.0.1', 12345);
     socket.write('REQUEST_JOIN_COURSE ${widget.username} $courseCode\n');
@@ -170,17 +169,19 @@ class _CoursesPageState extends State<CoursesPage> {
 
 class Course {
   final String name;
+  final String teacherName;
   final String creditUnit;
   final int noOfAssignments;
   final String bestStudent;
   final bool isPending;
 
-  Course(this.name, this.creditUnit, this.noOfAssignments, this.bestStudent,
+  Course(this.name, this.teacherName, this.creditUnit, this.noOfAssignments,
+      this.bestStudent,
       [this.isPending = false]);
 
   factory Course.fromString(String str) {
     List<String> parts = str.trim().split(' ');
-    return Course(parts[0], parts[1], int.parse(parts[2]), parts[3]);
+    return Course(parts[0], parts[1], parts[2], int.parse(parts[3]), parts[4]);
   }
 }
 
@@ -212,7 +213,7 @@ class CourseCard extends StatelessWidget {
             ),
             Divider(color: Colors.white),
             Text(
-              'استاد: ${course.name}',
+              'استاد: ${course.teacherName}',
               style: TextStyle(color: Colors.white, fontSize: 20),
               textAlign: TextAlign.right,
               textDirection: TextDirection.rtl,
