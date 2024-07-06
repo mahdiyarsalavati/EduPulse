@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 class ChangePasswordPage extends StatefulWidget {
-  const ChangePasswordPage({super.key});
+  final String username;
+  const ChangePasswordPage({super.key, required this.username});
 
   @override
   _ChangePasswordPageState createState() => _ChangePasswordPageState();
@@ -14,6 +16,30 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final _verifyPasswordController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureVerifyPassword = true;
+  late Socket _socket;
+
+  @override
+  void initState() {
+    super.initState();
+    _connectToServer();
+  }
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _verifyPasswordController.dispose();
+    _socket.close();
+    super.dispose();
+  }
+
+  void _connectToServer() async {
+    _socket = await Socket.connect('127.0.0.1', 12345);
+  }
+
+  void _sendUpdatedPassword(String username, String newPassword) {
+    String message = 'CHANGE_PASSWORD $username $newPassword';
+    _socket.write(message);
+  }
 
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
@@ -47,6 +73,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
+      String newPassword = _passwordController.text;
+      _sendUpdatedPassword(widget.username, newPassword);
       Navigator.pop(context);
     }
   }

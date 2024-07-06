@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'package:EDUPULSE/screens/AssignmentsPage.dart';
+import 'package:EDUPULSE/screens/CoursesPage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'ToDoPage.dart';
 import 'UserInfoPage.dart';
 
@@ -50,29 +53,12 @@ class _HomePageState extends State<HomePage> {
     CupertinoIcons.pencil_circle,
     CupertinoIcons.book_circle,
     CupertinoIcons.news,
-    CupertinoIcons.pencil_circle
+    CupertinoIcons.pencil_circle,
   ];
 
   @override
   void initState() {
     super.initState();
-    _fetchTasks();
-  }
-
-  Future<void> _fetchTasks() async {
-    try {
-      widget.socket.write('GET_TASKS ${widget.username}\n');
-      widget.socket.listen((data) {
-        String response = String.fromCharCodes(data).trim();
-        if (response.startsWith("TASKS")) {
-          setState(() {
-            tasks = response.substring(6).split("\n");
-          });
-        }
-      });
-    } catch (e) {
-      print('Error fetching tasks: $e');
-    }
   }
 
   @override
@@ -96,6 +82,12 @@ class _HomePageState extends State<HomePage> {
             );
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout, color: Colors.blueAccent),
+            onPressed: _logout,
+          ),
+        ],
       ),
       body: _buildPageContent(),
       bottomNavigationBar: BottomNavigationBar(
@@ -122,6 +114,10 @@ class _HomePageState extends State<HomePage> {
         return TodoScreen(
           username: widget.username,
         );
+      case 2:
+        return CoursesPage(username: widget.username);
+      case 4:
+        return AssignmentPage(username: widget.username);
       default:
         return SingleChildScrollView(
           child: SafeArea(
@@ -129,16 +125,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 20),
-                Center(
-                  child: Text(
-                    'خلاصه',
-                    style: TextStyle(
-                      fontFamily: "Abar",
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                _buildSectionTitle('خلاصه'),
                 SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -177,41 +164,54 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 SizedBox(height: 30),
-                Center(
-                  child: Text(
-                    'تسک های جاری',
-                    style: TextStyle(
-                      fontFamily: "Abar",
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                ...widget.activeAssignments
-                    .map((assignment) =>
-                    _buildTaskCard(assignment, isActive: true))
-                    .toList(),
-                SizedBox(height: 50),
-                Center(
-                  child: Text(
-                    'کارهای انجام شده',
-                    style: TextStyle(
-                      fontFamily: "Abar",
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                ...widget.notActiveAssignments
-                    .map((assignment) =>
-                    _buildTaskCard(assignment, isActive: false))
-                    .toList(),
-                SizedBox(height: 200)
+                _buildSectionTitle('تسک های جاری'),
+                SizedBox(height: 10),
+                isStringListEmpty(widget.activeAssignments)
+                    ? Center(child: Text('تسکی وجود نداره'))
+                    : Column(
+                        children: widget.activeAssignments
+                            .map((assignment) =>
+                                _buildTaskCard(assignment, isActive: true))
+                            .toList(),
+                      ),
+                SizedBox(height: 40),
+                _buildSectionTitle('کارهای انجام شده'),
+                SizedBox(height: 10),
+                widget.notActiveAssignments.isEmpty
+                    ? Center(child: Text('تسکی وجود نداره'))
+                    : Column(
+                        children: widget.notActiveAssignments
+                            .map((assignment) =>
+                                _buildTaskCard(assignment, isActive: false))
+                            .toList(),
+                      ),
+                SizedBox(height: 200),
               ],
             ),
           ),
         );
     }
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            fontFamily: "IRANSansX",
+            fontSize: 24,
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildSummaryCard(
@@ -243,18 +243,18 @@ class _HomePageState extends State<HomePage> {
         title: Text(task),
         trailing: isActive
             ? IconButton(
-          icon: Icon(CupertinoIcons.check_mark_circled,
-              color: Colors.blueAccent),
-          onPressed: () {
-            _completeTask(task);
-          },
-        )
+                icon: Icon(CupertinoIcons.check_mark_circled,
+                    color: Colors.blueAccent),
+                onPressed: () {
+                  _completeTask(task);
+                },
+              )
             : IconButton(
-          icon: Icon(CupertinoIcons.clear_circled, color: Colors.red),
-          onPressed: () {
-            _revertTask(task);
-          },
-        ),
+                icon: Icon(CupertinoIcons.clear_circled, color: Colors.red),
+                onPressed: () {
+                  _revertTask(task);
+                },
+              ),
       ),
     );
   }
@@ -279,16 +279,11 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _addTask(String task) {
-    setState(() {
-      tasks.add(task);
-    });
-  }
-
-  void _updateTask(int index, String task) {
-    setState(() {
-      tasks[index] = task;
-    });
+  void _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('username');
+    await prefs.remove('password');
+    Navigator.pushReplacementNamed(context, '/login');
   }
 
   String toPersian(String input) {
@@ -333,4 +328,10 @@ class _HomePageState extends State<HomePage> {
 
     return result;
   }
+}
+
+bool isStringListEmpty(List<String> list) {
+  if (list.isEmpty) return true;
+  if (list[0].length == 0) return true;
+  return false;
 }

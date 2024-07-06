@@ -27,28 +27,55 @@ class _UserInfoPageState extends State<UserInfoPage> {
   String _avatarUrl = '';
   late String _firstName;
   late String _lastName;
+  late Socket _socket;
   final ImagePicker _picker = ImagePicker();
 
-  final TextEditingController _averageGradeController =
-      TextEditingController(text: '۱۸.۶۴');
-  final TextEditingController _semesterController =
-      TextEditingController(text: 'بهار ۱۴۰۲ - ۱۴۰۳');
-  final TextEditingController _creditUnitController =
-      TextEditingController(text: '۱۶');
+  String _averageGrade = '...';
+  String _semester = '...';
+  String _creditUnit = '...';
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
     _firstName = widget.firstName;
     _lastName = widget.lastName;
+    _connectToSocket().then((_) {
+      _socket.write('GET_INFOPAGE_DATA ${widget.username}\n');
+    });
+  }
+
+  Future<void> _connectToSocket() async {
+    try {
+      _socket = await Socket.connect('127.0.0.1', 12345);
+      _socket.listen(
+        (data) {
+          String response = String.fromCharCodes(data).trim();
+          _handleSocketResponse(response);
+        },
+      );
+    } catch (e) {}
+  }
+
+  void _handleSocketResponse(String response) {
+    if (response.startsWith('INFOPAGE ')) {
+      List<String> data = response.split(' ');
+      if (data.length >= 4) {
+        setState(() {
+          _averageGrade = data[1];
+          _semester = data[2];
+          _creditUnit = data[3];
+          _loading = false;
+        });
+      }
+    }
   }
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
-        _avatarUrl =
-            pickedFile.path;
+        _avatarUrl = pickedFile.path;
       });
     }
   }
@@ -60,6 +87,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
         builder: (context) => EditInfoPage(
           firstName: _firstName,
           lastName: _lastName,
+          username: widget.username,
         ),
       ),
     );
@@ -74,106 +102,128 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
   void _changePassword() {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => ChangePasswordPage()));
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                ChangePasswordPage(username: widget.username)));
   }
 
   void _removeAccount() {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => RemoveAccountPage()));
+        context,
+        MaterialPageRoute(
+            builder: (context) =>
+                RemoveAccountPage(username: widget.username)));
+  }
+
+  @override
+  void dispose() {
+    _socket.destroy();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('اطلاعات کاربر')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            GestureDetector(
-              onTap: () async {
-                final action = await showDialog<String>(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: const Text('یک گزینه را انتخاب کنید',
-                        textAlign: TextAlign.center),
-                    actions: <Widget>[
-                      TextButton(
-                          onPressed: () => Navigator.pop(context, 'Gallery'),
-                          child: const Text('گالری')),
-                      TextButton(
-                          onPressed: () => Navigator.pop(context, 'Camera'),
-                          child: const Text('دوربین')),
-                    ],
-                  ),
-                );
-                if (action == 'Gallery') {
-                  _pickImage(ImageSource.gallery);
-                } else if (action == 'Camera') {
-                  _pickImage(ImageSource.camera);
-                }
-              },
-              child: Stack(
-                alignment: Alignment.center,
+      body: _loading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: _avatarUrl.isNotEmpty
-                        ? FileImage(File(_avatarUrl))
-                        : null,
-                    child: _avatarUrl.isEmpty
-                        ? Icon(CupertinoIcons.person_alt_circle, size: 50)
-                        : null,
+                  GestureDetector(
+                    onTap: () async {
+                      final action = await showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text('یک گزینه را انتخاب کنید',
+                              textAlign: TextAlign.center),
+                          actions: <Widget>[
+                            TextButton(
+                                onPressed: () =>
+                                    Navigator.pop(context, 'Gallery'),
+                                child: const Text('گالری')),
+                            TextButton(
+                                onPressed: () =>
+                                    Navigator.pop(context, 'Camera'),
+                                child: const Text('دوربین')),
+                          ],
+                        ),
+                      );
+                      if (action == 'Gallery') {
+                        _pickImage(ImageSource.gallery);
+                      } else if (action == 'Camera') {
+                        _pickImage(ImageSource.camera);
+                      }
+                    },
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage: _avatarUrl.isNotEmpty
+                              ? FileImage(File(_avatarUrl))
+                              : null,
+                          child: _avatarUrl.isEmpty
+                              ? Icon(CupertinoIcons.person_alt_circle, size: 50)
+                              : null,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text('$_firstName $_lastName',
+                      textAlign: TextAlign.center,
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 20),
+                  Expanded(
+                    child: Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildInfoRow(
+                              'شماره دانشجویی', toPersian(widget.username)),
+                          _buildInfoRow(
+                              'ترم جاری', semesterToPersian(_semester)),
+                          _buildInfoRow('تعداد واحد', toPersian(_creditUnit)),
+                          _buildInfoRow('معدل کل', toPersian(_averageGrade)),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  ElevatedButton.icon(
+                    onPressed: _editInfo,
+                    icon: Icon(CupertinoIcons.pencil),
+                    label: Text('ویرایش مشخصات'),
+                    style:
+                        ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    onPressed: _changePassword,
+                    icon: Icon(CupertinoIcons.lock),
+                    label: Text('ویرایش رمز عبور'),
+                    style:
+                        ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton.icon(
+                    onPressed: _removeAccount,
+                    icon: Icon(CupertinoIcons.trash, color: Colors.white),
+                    label: Text('حذف حساب کاربری',
+                        style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        minimumSize: Size(1000, 56)),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 10),
-            Text('$_firstName $_lastName',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            SizedBox(height: 20),
-            Expanded(
-              child: Directionality(
-                textDirection: TextDirection.rtl,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInfoRow('شماره دانشجویی', widget.username),
-                    _buildInfoRow('ترم جاری', _semesterController.text),
-                    _buildInfoRow('تعداد واحد', _creditUnitController.text),
-                    _buildInfoRow('معدل کل', _averageGradeController.text),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _editInfo,
-              icon: Icon(CupertinoIcons.pencil),
-              label: Text('ویرایش مشخصات'),
-              style: ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton.icon(
-              onPressed: _changePassword,
-              icon: Icon(CupertinoIcons.lock),
-              label: Text('ویرایش رمز عبور'),
-              style: ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
-            ),
-            SizedBox(height: 10),
-            ElevatedButton.icon(
-              onPressed: _removeAccount,
-              icon: Icon(CupertinoIcons.trash, color: Colors.white),
-              label: Text('حذف حساب کاربری',
-                  style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red, minimumSize: Size(1000, 56)),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -191,4 +241,80 @@ class _UserInfoPageState extends State<UserInfoPage> {
       ),
     );
   }
+}
+
+String toPersian(String input) {
+  String result = "";
+
+  for (var char in input.split('')) {
+    switch (char) {
+      case '0':
+        result += '۰';
+        break;
+      case '1':
+        result += '۱';
+        break;
+      case '2':
+        result += '۲';
+        break;
+      case '3':
+        result += '۳';
+        break;
+      case '4':
+        result += '۴';
+        break;
+      case '5':
+        result += '۵';
+        break;
+      case '6':
+        result += '۶';
+        break;
+      case '7':
+        result += '۷';
+        break;
+      case '8':
+        result += '۸';
+        break;
+      case '9':
+        result += '۹';
+        break;
+      default:
+        result += char;
+    }
+  }
+
+  return result;
+}
+
+String semesterToPersian(String semester) {
+  String result = "";
+  switch (semester) {
+    case 'FIRST':
+      result = "یک";
+      break;
+    case 'SECOND':
+      result = "دو";
+      break;
+    case 'THIRD':
+      result = "سه";
+      break;
+    case 'FOURTH':
+      result = "چهار";
+      break;
+    case 'FIFTH':
+      result = "پنج";
+      break;
+    case 'SIXTH':
+      result = "شش";
+      break;
+    case 'SEVENTH':
+      result = "هفت";
+      break;
+    case 'EIGHTH':
+      result = "هشت";
+      break;
+    default:
+      result = "تابستان";
+  }
+  return result;
 }

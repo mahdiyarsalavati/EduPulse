@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'HomePage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -29,7 +30,9 @@ class _LoginPageState extends State<LoginPage> {
     }, onError: (error) {
       print('Socket error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Connection error. Please try again.')),
+        SnackBar(
+            content: Text('ارتباط موفقیت آمیز نبود.',
+                textAlign: TextAlign.right, textDirection: TextDirection.rtl)),
       );
     });
   }
@@ -42,7 +45,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _handleSocketResponse(String response) {
+  void _handleSocketResponse(String response) async {
     if (response.startsWith('LOGIN_SUCCESS')) {
       _socket.write('GET_HOMEPAGE_DATA ${_usernameController.text}\n');
     } else if (response.startsWith('HOMEPAGE_DATA')) {
@@ -57,6 +60,10 @@ class _LoginPageState extends State<LoginPage> {
           parts.sublist(7, parts.indexOf('END_ACTIVE')).toList();
       final notActiveAssignments =
           parts.sublist(parts.indexOf('END_ACTIVE') + 1).toList();
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('username', _usernameController.text);
+      await prefs.setString('password', _passwordController.text);
 
       Navigator.pushReplacement(
         context,
@@ -77,7 +84,9 @@ class _LoginPageState extends State<LoginPage> {
       );
     } else if (response == "LOGIN_FAILED") {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ورود ناموفق بود. دوباره تلاش کنید.')),
+        SnackBar(
+            content: Text('ورود ناموفق بود. دوباره تلاش کنید.',
+                textAlign: TextAlign.right, textDirection: TextDirection.rtl)),
       );
     }
   }

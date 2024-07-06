@@ -46,16 +46,22 @@ class _SignupPageState extends State<SignupPage> {
   void _handleSocketResponse(String response) {
     if (response == 'SIGNUP_SUCCESS') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Signup successful. Please log in.')),
+        SnackBar(
+            content: Text('ثبت نام موفقیت آمیز بود. لطفا وارد شوید.',
+                textAlign: TextAlign.right, textDirection: TextDirection.rtl)),
       );
       Navigator.pop(context);
     } else if (response == 'USER_ALREADY_EXISTS') {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('User already exists. Please try again.')),
+        SnackBar(
+            content: Text('کاربر از قبل وجود دارد.',
+                textAlign: TextAlign.right, textDirection: TextDirection.rtl)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Signup failed. Please try again.')),
+        SnackBar(
+            content: Text('ثبت نام موفقیت آمیز نبود.',
+                textAlign: TextAlign.right, textDirection: TextDirection.rtl)),
       );
     }
   }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'dart:convert';
 
 class TodoScreen extends StatefulWidget {
   final String username;
@@ -21,6 +23,7 @@ class _TodoScreenState extends State<TodoScreen> {
   void initState() {
     super.initState();
     _initializeNotifications();
+    _loadTasks();
   }
 
   void _initializeNotifications() async {
@@ -32,6 +35,26 @@ class _TodoScreenState extends State<TodoScreen> {
     );
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  Future<void> _loadTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? tasksString = prefs.getString('tasks_${widget.username}');
+    if (tasksString != null) {
+      List<dynamic> tasksJson = jsonDecode(tasksString);
+      setState(() {
+        _tasks.clear();
+        for (var taskJson in tasksJson) {
+          _tasks.add(Map<String, dynamic>.from(taskJson));
+        }
+      });
+    }
+  }
+
+  Future<void> _saveTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String tasksString = jsonEncode(_tasks);
+    await prefs.setString('tasks_${widget.username}', tasksString);
   }
 
   @override
@@ -48,7 +71,7 @@ class _TodoScreenState extends State<TodoScreen> {
             color: Colors.deepPurple,
             child: ListTile(
               title: Text(
-                _tasks[index]['title']!,
+                _tasks[index]['title'],
                 style: TextStyle(
                   fontSize: 30,
                   color: Colors.white,
@@ -58,7 +81,7 @@ class _TodoScreenState extends State<TodoScreen> {
                 ),
               ),
               subtitle: Text(
-                _tasks[index]['time']!,
+                _tasks[index]['time'],
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.white70,
@@ -75,6 +98,7 @@ class _TodoScreenState extends State<TodoScreen> {
                   setState(() {
                     _tasks[index]['done'] = !_tasks[index]['done'];
                   });
+                  _saveTasks();
                 },
               ),
             ),
@@ -90,7 +114,7 @@ class _TodoScreenState extends State<TodoScreen> {
   }
 
   void _showAddTaskDialog(BuildContext context) {
-    final _titleController = TextEditingController();
+    final TextEditingController _titleController = TextEditingController();
     DateTime _selectedDate = DateTime.now();
     TimeOfDay _selectedTime = TimeOfDay(hour: 7, minute: 0);
 
@@ -184,6 +208,7 @@ class _TodoScreenState extends State<TodoScreen> {
     setState(() {
       _tasks.add({'title': title, 'time': dateTime, 'done': false});
     });
+    _saveTasks();
   }
 
   void _scheduleNotification(String title, DateTime scheduledTime) async {
