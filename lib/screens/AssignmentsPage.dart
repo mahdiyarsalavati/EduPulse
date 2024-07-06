@@ -6,8 +6,11 @@ import 'package:file_picker/file_picker.dart';
 
 class AssignmentPage extends StatefulWidget {
   final String username;
+  final Function onAssignmentCompleted;
 
-  const AssignmentPage({Key? key, required this.username}) : super(key: key);
+  const AssignmentPage(
+      {Key? key, required this.username, required this.onAssignmentCompleted})
+      : super(key: key);
 
   @override
   _AssignmentPageState createState() => _AssignmentPageState();
@@ -56,6 +59,9 @@ class _AssignmentPageState extends State<AssignmentPage> {
     setState(() {
       _isCompleted[name] = isCompleted;
     });
+    if (isCompleted) {
+      widget.onAssignmentCompleted();
+    }
   }
 
   Future<void> _loadCompletionStatus() async {
@@ -101,9 +107,11 @@ class _AssignmentPageState extends State<AssignmentPage> {
         child: ListView(
           children: _assignments.map((assignment) {
             bool isCompleted = _isCompleted[assignment.name] ?? false;
-            int estimatedTime = _estimatedTimes[assignment.name] ?? assignment.estimatedTime;
+            int estimatedTime =
+                _estimatedTimes[assignment.name] ?? assignment.estimatedTime;
             return GestureDetector(
-              onTap: () => _showAssignmentDialog(assignment, isCompleted, estimatedTime),
+              onTap: () =>
+                  _showAssignmentDialog(assignment, isCompleted, estimatedTime),
               child: Stack(
                 children: [
                   Card(
@@ -160,9 +168,10 @@ class _AssignmentPageState extends State<AssignmentPage> {
     );
   }
 
-  void _showAssignmentDialog(Assignment assignment, bool isCompleted, int estimatedTime) {
+  void _showAssignmentDialog(
+      Assignment assignment, bool isCompleted, int estimatedTime) {
     TextEditingController _estimatedTimeController =
-    TextEditingController(text: estimatedTime.toString());
+        TextEditingController(text: estimatedTime.toString());
     TextEditingController _descriptionController = TextEditingController();
     File? selectedFile;
 
@@ -202,7 +211,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 ElevatedButton(
                   onPressed: () async {
                     FilePickerResult? result =
-                    await FilePicker.platform.pickFiles(
+                        await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf'],
                     );
@@ -222,9 +231,12 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 if (selectedFile != null) {
                   _saveCompletionStatus(assignment.name, true);
                 }
-                _saveEstimatedTime(assignment.name, int.parse(_estimatedTimeController.text)).then((_) {
+                _saveEstimatedTime(assignment.name,
+                        int.parse(_estimatedTimeController.text))
+                    .then((_) {
                   setState(() {
-                    _estimatedTimes[assignment.name] = int.parse(_estimatedTimeController.text);
+                    _estimatedTimes[assignment.name] =
+                        int.parse(_estimatedTimeController.text);
                   });
                 });
               },

@@ -48,7 +48,8 @@ dev_dependencies:
   shared_preferences: ^2.2.3
   flutter_launcher_icons: ^0.9.2
   file_picker: ^8.0.5
-  webview_flutter: ^4.8.0
+  webview_flutter: ^4.0.7
+  url_launcher: ^6.0.20
 
 flutter_icons:
   android: true
