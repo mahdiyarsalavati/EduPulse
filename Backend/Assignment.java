@@ -90,6 +90,6 @@ public class Assignment {
     @Override
     public String toString() {
         long daysUntilDeadline = daysUntilDeadline();
-        return "Assignment: " + getID() + ", Deadline: " + deadline + ", Days until deadline: " + daysUntilDeadline + ", Estimated: " + estimated;
+        return deadline.toString() + "," + isAvailable + "," + course.getID() + "," + getID() + "," + estimated;
     }
 }

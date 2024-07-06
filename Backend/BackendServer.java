@@ -292,6 +292,8 @@ public class BackendServer {
             String command = parts[0];
             String response = "";
 
+            System.out.println(command);
+
             switch (command) {
                 case "GET_TEACHERS":
                     response = getTeachers();
@@ -371,7 +373,7 @@ public class BackendServer {
             return students.stream()
                     .filter(s -> s.getID().equals(username))
                     .flatMap(s -> s.getCourses().stream())
-                    .map(course -> String.format("%s %d %d %s END", course.getName(), course.getCreditUnit(), course.getAssignments().size(), (course.getHighestGradeStudent().getFirstName() + course.getHighestGradeStudent().getLastName())))
+                    .map(course -> String.format("%s %s %d %d %s END", course.getName(), course.getTeacher().getFirstName() + course.getTeacher().getLastName(), course.getCreditUnit(), course.getAssignments().size(), (course.getHighestGradeStudent().getFirstName() + course.getHighestGradeStudent().getLastName())))
                     .collect(Collectors.joining(" "));
         }
 
