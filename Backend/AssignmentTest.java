@@ -14,7 +14,7 @@ public class AssignmentTest {
     public void setUp() {
         Teacher teacher = new Teacher("Ali", "Alavi", new ArrayList<>(), "402243010", "1234".toCharArray());
         course = new Course("Test Course", 3, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), true, "2024-05-01", Semester.FIRST, teacher, "4021");
-        assignment = new Assignment(LocalDate.now().plusDays(7), true, course, "40221");
+        assignment = new Assignment(LocalDate.now().plusDays(7), true, course, "40221", "3");
     }
 
     @Test

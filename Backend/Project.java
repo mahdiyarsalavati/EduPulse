@@ -2,9 +2,10 @@ import java.time.LocalDate;
 
 public class Project extends Assignment {
     private String name;
+    private String estimated;
 
-    public Project(LocalDate deadline, boolean isAvailable, Course course, String ID, String name) {
-        super(deadline, isAvailable, course, ID);
+    public Project(LocalDate deadline, boolean isAvailable, Course course, String ID, String name, String estimated) {
+        super(deadline, isAvailable, course, ID, estimated);
         this.name = name;
     }
 

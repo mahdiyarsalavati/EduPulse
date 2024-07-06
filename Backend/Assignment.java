@@ -1,4 +1,3 @@
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -12,13 +11,15 @@ public class Assignment {
     private final Course course;
     private static final List<Assignment> archive = new ArrayList<>();
     private final String ID;
+    private String estimated;
 
-    public Assignment(LocalDate deadline, boolean isAvailable, Course course, String ID) {
+    public Assignment(LocalDate deadline, boolean isAvailable, Course course, String ID, String estimated) {
         this.creationDate = LocalDate.now();
         this.deadline = deadline;
         this.isAvailable = isAvailable;
         this.course = course;
         this.ID = ID;
+        this.estimated = estimated;
         if (!isAvailable) {
             archive.add(this);
         }
@@ -65,6 +66,14 @@ public class Assignment {
         this.deadline = this.deadline.plusDays(days);
     }
 
+    public String getEstimated() {
+        return estimated;
+    }
+
+    public void setEstimated(String estimated) {
+        this.estimated = estimated;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -80,6 +89,7 @@ public class Assignment {
 
     @Override
     public String toString() {
-        return deadline + "," + isAvailable + "," + course.getID() + "," + getID();
+        long daysUntilDeadline = daysUntilDeadline();
+        return "Assignment: " + getID() + ", Deadline: " + deadline + ", Days until deadline: " + daysUntilDeadline + ", Estimated: " + estimated;
     }
 }

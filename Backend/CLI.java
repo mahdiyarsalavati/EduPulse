@@ -191,9 +191,10 @@ public class CLI {
             boolean isAvailable = Boolean.parseBoolean(details[1]);
             String courseID = details[2];
             String ID = details[3];
+            String estimated = details[4];
             Course course = courses.stream().filter(c -> c.getID().equals(courseID)).findFirst().orElse(null);
             if (course != null) {
-                Assignment assignment = new Assignment(deadline, isAvailable, course, ID);
+                Assignment assignment = new Assignment(deadline, isAvailable, course, ID, estimated);
                 assignments.add(assignment);
                 course.addAssignment(assignment);
             }
@@ -217,9 +218,10 @@ public class CLI {
             String courseID = details[2];
             String ID = details[3];
             String name = details[4];
+            String estimated = details[5];
             Course course = courses.stream().filter(c -> c.getID().equals(courseID)).findFirst().orElse(null);
             if (course != null) {
-                Project project = new Project(deadline, isAvailable, course, ID, name);
+                Project project = new Project(deadline, isAvailable, course, ID, name, estimated);
                 projects.add(project);
                 course.addProject(project);
             }
@@ -594,6 +596,8 @@ public class CLI {
         scanner.nextLine();
         System.out.print("ID: ");
         String ID = scanner.nextLine();
+        System.out.print("Estimated time to get this done (in hrs): ");
+        String estimated = scanner.nextLine();
 
         boolean exists = assignments.stream().anyMatch(a -> a.getID().equals(ID));
         if (!exists) {
@@ -602,7 +606,7 @@ public class CLI {
             int chosenCourseNum = getValidatedInput(scanner, RED, 1, courses.size());
             Course chosenCourse = courses.get(chosenCourseNum - 1);
 
-            Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse, ID);
+            Assignment assignment = new Assignment(deadline, isAvailable, chosenCourse, ID, estimated);
             assignments.add(assignment);
             chosenCourse.addAssignment(assignment);
             System.out.println(GREEN + "Assignment added successfully!");
@@ -643,6 +647,8 @@ public class CLI {
         scanner.nextLine();
         System.out.print("ID: ");
         String ID = scanner.nextLine();
+        System.out.print("Estimated time to done this (in hrs): ");
+        String estimated = scanner.nextLine();
 
         boolean exists = projects.stream().anyMatch(p -> p.getID().equals(ID));
         if (!exists) {
@@ -651,7 +657,7 @@ public class CLI {
             int chosenCourseNum = getValidatedInput(scanner, RED, 1, courses.size());
             Course chosenCourse = courses.get(chosenCourseNum - 1);
 
-            Project project = new Project(deadline, isAvailable, chosenCourse, ID, name);
+            Project project = new Project(deadline, isAvailable, chosenCourse, ID, name, estimated);
             projects.add(project);
             chosenCourse.addProject(project);
             System.out.println(GREEN + "Project added successfully!");
@@ -725,9 +731,7 @@ public class CLI {
         System.out.println("Enter the grade for the student:");
         double grade = scanner.nextDouble();
 
-        double initialGrade = selectedCourse.getGrade(selectedStudent);
-        double finalGrade = initialGrade + grade >= 20 ? 20 : initialGrade + grade;
-        selectedCourse.gradeStudent(selectedStudent, finalGrade);
+        selectedCourse.gradeStudent(selectedStudent, grade);
 
         System.out.println(GREEN + "Student graded successfully with a grade of " + grade + ".");
         rewrite();

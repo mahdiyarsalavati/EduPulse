@@ -5,10 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -127,9 +124,10 @@ public class BackendServer {
                 boolean isAvailable = Boolean.parseBoolean(details[1]);
                 String courseID = details[2];
                 String ID = details[3];
+                String estimated = details[4];
                 Course course = courses.stream().filter(c -> c != null && c.getID().equals(courseID)).findFirst().orElse(null);
                 if (course != null) {
-                    Assignment assignment = new Assignment(deadline, isAvailable, course, ID);
+                    Assignment assignment = new Assignment(deadline, isAvailable, course, ID, estimated);
                     course.addAssignment(assignment);
                     return assignment;
                 }
@@ -150,9 +148,10 @@ public class BackendServer {
                 String courseID = details[2];
                 String ID = details[3];
                 String name = details[4];
+                String estimated = details[5];
                 Course course = courses.stream().filter(c -> c != null && c.getID().equals(courseID)).findFirst().orElse(null);
                 if (course != null) {
-                    Project project = new Project(deadline, isAvailable, course, ID, name);
+                    Project project = new Project(deadline, isAvailable, course, ID, name, estimated);
                     course.addProject(project);
                     return project;
                 }
@@ -304,7 +303,7 @@ public class BackendServer {
                     response = getCourses();
                     break;
                 case "GET_ASSIGNMENTS":
-                    response = getAssignments();
+                    response = getAssignments(parts[1]);
                     break;
                 case "GET_PROJECTS":
                     response = getProjects();
@@ -333,11 +332,31 @@ public class BackendServer {
                 case "GET_HOMEPAGE_DATA":
                     response = getHomePageData(parts[1]);
                     break;
-                case "GET_COURSES_OF_STUDENT":
-                    response = getCoursesOfAStudent(parts[1]);
-                    break;
                 case "UPLOAD_ASSIGNMENT":
                     response = uploadAssignment(parts);
+                    break;
+                case "GET_INFOPAGE_DATA":
+                    response = "INFOPAGE " + getAverage(parts[1]) + " " + getSemester(parts[1]) + " " + getCreditUnits(parts[1]);
+                    break;
+                case "CHANGE_NAME":
+                    changeName(parts[1], parts[2], parts[3]);
+                    response = "";
+                    break;
+                case "CHANGE_PASSWORD":
+                    changePassword(parts[1], parts[2]);
+                    response = "";
+                    break;
+                case "REMOVE_STUDENT":
+                    removeStudent(parts[1]);
+                    response = "";
+                    break;
+                case "GET_COURSES_OF_STUDENT":
+                    System.out.println(request);
+                    response = getCoursesOfStudent(parts[1]);
+                    break;
+                case "REQUEST_JOIN_COURSE":
+                    System.out.println(request);
+                    response = requestJoinCourse(parts[1], parts[2]);
                     break;
                 default:
                     response = "UNKNOWN_COMMAND";
@@ -345,6 +364,76 @@ public class BackendServer {
             }
 
             return response;
+        }
+
+
+        private String getCoursesOfStudent(String username) {
+            return students.stream()
+                    .filter(s -> s.getID().equals(username))
+                    .flatMap(s -> s.getCourses().stream())
+                    .map(course -> String.format("%s %d %d %s END", course.getName(), course.getCreditUnit(), course.getAssignments().size(), (course.getHighestGradeStudent().getFirstName() + course.getHighestGradeStudent().getLastName())))
+                    .collect(Collectors.joining(" "));
+        }
+
+        private String requestJoinCourse(String username, String courseCode) {
+            Course course = courses.stream().filter(c -> c.getID().equals(courseCode)).findFirst().orElse(null);
+            Student student = students.stream().filter(s -> s.getID().equals(username)).findFirst().orElse(null);
+
+            if (course != null && student != null && canJoinCourse(student, course)) {
+                course.addStudent(student, 0.0);
+                rewrite();
+                return "JOIN_SUCCESS";
+            } else {
+                return "JOIN_FAILED";
+            }
+        }
+
+        private boolean canJoinCourse(Student student, Course course) {
+            Scanner scanner = new Scanner(System.in);
+            int currentCreditUnits = student.getCourses().stream().mapToInt(Course::getCreditUnit).sum();
+            System.out.printf("Can %s %s join %s? They have %d credit unit(s) already: (yes/no) ",
+                    student.getFirstName(), student.getLastName(), course.getName(), currentCreditUnits);
+            String response = scanner.nextLine();
+            return response.equalsIgnoreCase("yes");
+        }
+
+        private static void removeStudent(String username) {
+            students.removeIf(student -> student.getID().equals(username));
+
+            for (Course course : courses) {
+                course.removeStudentByUsername(username);
+            }
+
+            rewrite();
+        }
+
+        private void changePassword(String username, String newPassword) {
+            students.stream().filter(s -> s.getID().equals(username)).forEach(x -> x.changePassword(newPassword));
+            rewrite();
+
+        }
+
+        private void changeName(String username, String newName, String newLastName) {
+            students.stream().filter(s -> s.getID().equals(username)).forEach(x -> x.changeName(newName, newLastName));
+            rewrite();
+        }
+
+
+        private String getAverage(String username) {
+            return students.stream()
+                    .filter(s -> s.getID().equals(username))
+                    .findFirst()
+                    .map(student -> String.format("%.2f", student.getAverageGrade()))
+                    .orElse("0.00");
+        }
+
+
+        private String getSemester(String username) {
+            return String.valueOf(students.stream().filter(s -> s.getID().equals(username)).findFirst().map(Student::getSemester).get());
+        }
+
+        private String getCreditUnits(String username) {
+            return String.valueOf(students.stream().filter(s -> s.getID().equals(username)).findFirst().map(Student::getCreditUnits).get());
         }
 
         private String getHomePageData(String username) {
@@ -418,8 +507,32 @@ public class BackendServer {
             return courses.stream().map(Course::toString).collect(Collectors.joining("\n"));
         }
 
-        private String getAssignments() {
-            return assignments.stream().map(Assignment::toString).collect(Collectors.joining("\n"));
+        private String getAssignments(String username) {
+            StringBuilder assignmentsBuilder = new StringBuilder();
+
+            Student student = students.stream()
+                    .filter(s -> s.getID().equals(username))
+                    .findFirst()
+                    .orElse(null);
+
+            if (student == null) {
+                return "USER_NOT_FOUND";
+            }
+
+            for (Course course : student.getCourses()) {
+                for (Assignment assignment : course.getAssignments()) {
+                    assignmentsBuilder.append(" ASSIGNMENT ")
+                            .append(getAssignmentName(assignment)).append(" ")
+                            .append(assignment.daysUntilDeadline()).append(" ")
+                            .append(assignment.getEstimated()).append(" ");
+                }
+            }
+
+            return assignmentsBuilder.toString().trim();
+        }
+
+        private String getAssignmentName(Assignment assignment) {
+            return assignment.getCourse().getName() + (assignment.getCourse().getAssignments().indexOf(assignment) + 1);
         }
 
         private String getProjects() {
@@ -507,10 +620,11 @@ public class BackendServer {
             boolean isAvailable = Boolean.parseBoolean(parts[2]);
             String courseID = parts[3];
             String ID = parts[4];
+            String estimated = parts[5];
 
             Course course = courses.stream().filter(c -> c != null && c.getID().equals(courseID)).findFirst().orElse(null);
             if (course != null) {
-                Assignment assignment = new Assignment(deadline, isAvailable, course, ID);
+                Assignment assignment = new Assignment(deadline, isAvailable, course, ID, estimated);
                 assignments.add(assignment);
                 course.addAssignment(assignment);
                 rewrite();
@@ -526,10 +640,11 @@ public class BackendServer {
             String courseID = parts[3];
             String ID = parts[4];
             String name = parts[5];
+            String estimated = parts[6];
 
             Course course = courses.stream().filter(c -> c != null && c.getID().equals(courseID)).findFirst().orElse(null);
             if (course != null) {
-                Project project = new Project(deadline, isAvailable, course, ID, name);
+                Project project = new Project(deadline, isAvailable, course, ID, name, estimated);
                 projects.add(project);
                 course.addProject(project);
                 rewrite();
@@ -604,7 +719,7 @@ public class BackendServer {
         private String listOfAssignments(String username) {
             List<String> result = assignments.stream()
                     .filter(a -> a.isAvailable() && a.getCourse().getStudents().stream().anyMatch(s -> s.getID().equals(username)))
-                    .map(a -> a.getCourse().getName() + " " + (a.getCourse().getAssignments().indexOf(a) + 1))
+                    .map(a -> a.getCourse().getName() + "" + (a.getCourse().getAssignments().indexOf(a) + 1))
                     .collect(Collectors.toList());
             return String.join(" ", result);
         }

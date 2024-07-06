@@ -21,14 +21,14 @@ public class Main {
 
         teacher.addStudent(course2, student1);
 
-        Assignment assignment1 = new Assignment(LocalDate.now().plusDays(7), true, course1, "40221");
-        Assignment assignment2 = new Assignment(LocalDate.now().plusDays(10), false, course2, "40222");
+        Assignment assignment1 = new Assignment(LocalDate.now().plusDays(7), true, course1, "40221", "3");
+        Assignment assignment2 = new Assignment(LocalDate.now().plusDays(10), false, course2, "40222", "3");
 
         teacher.addAssignment(course1, assignment1);
         teacher.addAssignment(course2, assignment2);
 
-        Project project1 = new Project(LocalDate.now().plusDays(7), true, course1, "40223", "Math Project");
-        Project project2 = new Project(LocalDate.now().plusDays(10), false, course2, "40224", "English Project");
+        Project project1 = new Project(LocalDate.now().plusDays(7), true, course1, "40223", "Math Project", "3");
+        Project project2 = new Project(LocalDate.now().plusDays(10), false, course2, "40224", "English Project", "3");
 
         teacher.addProject(course1, project1);
         teacher.addProject(course2, project2);

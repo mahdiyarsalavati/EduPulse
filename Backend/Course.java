@@ -212,6 +212,10 @@ public class Course implements Serializable {
         return studentGrades.keySet().stream().collect(Collectors.toList());
     }
 
+    public void removeStudentByUsername(String username) {
+        studentGrades.keySet().removeIf(student -> student.getID().equals(username));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

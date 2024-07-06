@@ -20,10 +20,10 @@ public class CourseTest {
         teacher.addCourse(course);
         student1 = new Student("Test", "Student1", new ArrayList<>(), "1234".toCharArray(), "402243104", Semester.SECOND);
         student2 = new Student("Test", "Student2", new ArrayList<>(), "1234".toCharArray(), "402243001", Semester.SECOND);
-        assignment1 = new Assignment(LocalDate.now().plusDays(7), true, course, "40211");
-        assignment2 = new Assignment(LocalDate.now().plusDays(10), false, course, "40212");
-        project1 = new Project(LocalDate.now().plusDays(7), true, course, "Test Project1", "40213");
-        project2 = new Project(LocalDate.now().plusDays(10), false, course, "Test Project2", "40214");
+        assignment1 = new Assignment(LocalDate.now().plusDays(7), true, course, "40211", "3");
+        assignment2 = new Assignment(LocalDate.now().plusDays(10), false, course, "40212", "3");
+        project1 = new Project(LocalDate.now().plusDays(7), true, course, "Test Project1", "40213", "3");
+        project2 = new Project(LocalDate.now().plusDays(10), false, course, "Test Project2", "40214", "3");
     }
 
     @Test
@@ -96,7 +96,7 @@ public class CourseTest {
         assertFalse(course.getAssignments().contains(assignment1));
         assertTrue(course.getAssignments().contains(assignment2));
 
-        assertThrows(IllegalArgumentException.class, () -> course.removeAssignment(new Assignment(LocalDate.now().plusDays(5), true, course, "40224")));
+        assertThrows(IllegalArgumentException.class, () -> course.removeAssignment(new Assignment(LocalDate.now().plusDays(5), true, course, "40224", "3")));
     }
 
     @Test
@@ -116,7 +116,7 @@ public class CourseTest {
         assertFalse(course.getProjects().contains(project1));
         assertTrue(course.getProjects().contains(project2));
 
-        assertThrows(IllegalArgumentException.class, () -> course.removeProject(new Project(LocalDate.now().plusDays(5), true, course,"40225", "Test Project3")));
+        assertThrows(IllegalArgumentException.class, () -> course.removeProject(new Project(LocalDate.now().plusDays(5), true, course,"40225", "Test Project3", "3")));
     }
 
     @Test

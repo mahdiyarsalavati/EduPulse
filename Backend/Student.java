@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -97,6 +98,23 @@ public class Student extends Person {
 
     public void printCreditUnits() {
         System.out.println(getFirstName() + " " + getLastName() + "'s total credit units are " + getCreditUnits());
+    }
+
+    public List<Double> getGrades() {
+        List<Double> grades = new ArrayList<>();
+        for (Course course : getCourses()) {
+            grades.add(course.getGrade(this));
+        }
+        return grades;
+    }
+
+    public void changeName(String newName, String newLastName) {
+        this.setFirstName(newName);
+        this.setLastName(newLastName);
+    }
+
+    public void changePassword(String newPassword) {
+        this.setPassword(newPassword.toCharArray());
     }
 
     @Override
