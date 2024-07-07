@@ -155,9 +155,7 @@ public class Course implements Serializable {
     }
 
     public void removeAssignment(Assignment assignment) {
-        if (!assignments.remove(assignment)) {
-            throw new IllegalArgumentException("Assignment could not be found!");
-        }
+        assignments.remove(assignment);
     }
 
     public void addProject(Project project) {
@@ -167,9 +165,7 @@ public class Course implements Serializable {
     }
 
     public void removeProject(Project project) {
-        if (!projects.remove(project)) {
-            throw new IllegalArgumentException("Project could not be found!");
-        }
+        projects.remove(project);
     }
 
     public void printStudents() {

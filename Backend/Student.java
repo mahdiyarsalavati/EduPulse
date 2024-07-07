@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,6 +61,9 @@ public class Student extends Person {
             totalCredits += course.getCreditUnit();
         }
         this.averageGrade = totalGrade / totalCredits;
+        String temp = String.valueOf(this.averageGrade);
+        temp = temp.substring(0, 5);
+        this.averageGrade = Double.parseDouble(temp);
     }
 
     private void updateSemesterGrade() {
@@ -111,6 +115,22 @@ public class Student extends Person {
     public void changeName(String newName, String newLastName) {
         this.setFirstName(newName);
         this.setLastName(newLastName);
+    }
+
+    public Double getHighestGrade() {
+        return Collections.max(getGrades());
+    }
+
+    public Double getLowestGrade() {
+        return Collections.min(getGrades());
+    }
+
+    public List<Assignment> getAssignments() {
+        List<Assignment> result = new ArrayList<>();
+        getCourses().stream()
+                .map(x -> x.getAssignments())
+                .forEach(x -> result.addAll(x));
+        return result;
     }
 
     public void changePassword(String newPassword) {

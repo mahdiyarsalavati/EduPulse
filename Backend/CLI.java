@@ -42,27 +42,22 @@ public class CLI {
     private static final FileUtils<Project> fileUtilsProject = new FileUtils<>();
 
     static {
-        loadTeachers();
-        loadStudents();
-        loadCourses();
-        loadAssignments();
-        loadProjects();
-        loadCourseMaps();
+        reload();
     }
 
     private static void reload() {
-        loadTeachers();
-        loadStudents();
-        loadCourses();
-        loadAssignments();
-        loadProjects();
-        loadCourseMaps();
+        loadTeachers(courses, teachers, TEACHERS_FILE);
+        loadStudents(courses, students, STUDENTS_FILE);
+        loadCourses(courses, teachers, students, assignments, projects, COURSES_FILE);
+        loadAssignments(courses, assignments, ASSIGNMENTS_FILE);
+        loadProjects(courses, projects, PROJECTS_FILE);
+        loadCourseMaps(courses, students, COURSES_MAPS_FILE);
     }
 
 
-    private static void loadTeachers() {
+    synchronized static void loadTeachers(List<Course> courses, List<Teacher> teachers, String address) {
         teachers.clear();
-        Path teachersPath = Paths.get(TEACHERS_FILE);
+        Path teachersPath = Paths.get(address);
         List<String> teachersDetails = new ArrayList<>();
         try {
             teachersDetails = Files.readAllLines(teachersPath);
@@ -90,9 +85,9 @@ public class CLI {
         }
     }
 
-    private static void loadStudents() {
+    synchronized static void loadStudents(List<Course> courses, List<Student> students, String address) {
         students.clear();
-        Path studentsPath = Paths.get(STUDENTS_FILE);
+        Path studentsPath = Paths.get(address);
         List<String> studentsDetails = new ArrayList<>();
         try {
             studentsDetails = Files.readAllLines(studentsPath);
@@ -121,9 +116,9 @@ public class CLI {
         }
     }
 
-    private static void loadCourses() {
+    synchronized static void loadCourses(List<Course> courses, List<Teacher> teachers, List<Student> students, List<Assignment> assignments, List<Project> projects, String address) {
         courses.clear();
-        Path coursesPath = Paths.get(COURSES_FILE);
+        Path coursesPath = Paths.get(address);
         List<String> coursesDetails = new ArrayList<>();
         try {
             coursesDetails = Files.readAllLines(coursesPath);
@@ -175,9 +170,9 @@ public class CLI {
     }
 
 
-    private static void loadAssignments() {
+    synchronized static void loadAssignments(List<Course> courses, List<Assignment> assignments, String address) {
         assignments.clear();
-        Path assignmentsPath = Paths.get(ASSIGNMENTS_FILE);
+        Path assignmentsPath = Paths.get(address);
         List<String> assignmentsDetails = new ArrayList<>();
         try {
             assignmentsDetails = Files.readAllLines(assignmentsPath);
@@ -201,9 +196,9 @@ public class CLI {
         }
     }
 
-    private static void loadProjects() {
+    synchronized static void loadProjects(List<Course> courses, List<Project> projects, String address) {
         projects.clear();
-        Path projectsPath = Paths.get(PROJECTS_FILE);
+        Path projectsPath = Paths.get(address);
         List<String> projectsDetails = new ArrayList<>();
         try {
             projectsDetails = Files.readAllLines(projectsPath);
@@ -228,8 +223,8 @@ public class CLI {
         }
     }
 
-    private static void loadCourseMaps() {
-        Path courseMapsPath = Paths.get(COURSES_MAPS_FILE);
+    synchronized static void loadCourseMaps(List<Course> courses, List<Student> students, String address) {
+        Path courseMapsPath = Paths.get(address);
         List<String> courseMapsDetails = new ArrayList<>();
         try {
             courseMapsDetails = Files.readAllLines(courseMapsPath);
@@ -299,7 +294,7 @@ public class CLI {
         System.out.println(GREEN + "Choose your role:\n1) Teacher\n2) Admin");
     }
 
-    private static void handleTeacher(Scanner scanner, Admin admin, String teacherID) throws FileNotFoundException {
+    private static void handleTeacher(Scanner scanner, Admin admin, String teacherID) {
         Teacher teacher = admin.findTeacherByID(teacherID);
         if (teacher != null) {
             boolean exit = false;
@@ -333,7 +328,7 @@ public class CLI {
         }
     }
 
-    private static void handleAdmin(Scanner scanner, Console console, Admin admin, List<Teacher> teachers) throws FileNotFoundException {
+    private static void handleAdmin(Scanner scanner, Console console, Admin admin, List<Teacher> teachers) {
         boolean exit = false;
         while (!exit) {
             int input = showAdminMenu(scanner, YELLOW);
@@ -509,6 +504,7 @@ public class CLI {
         boolean exists = courses.stream().anyMatch(c -> c.getID().equals(ID));
         if (!exists) {
             Course course = new Course(name, creditUnit, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), isAvailable, examDate, semester, chosenTeacher, ID);
+            chosenTeacher.addCourse(course);
             courses.add(course);
             System.out.println(GREEN + "Course added successfully!");
             rewrite();
@@ -629,6 +625,9 @@ public class CLI {
         displayList(assignments);
         int assignmentIndex = getValidatedInput(scanner, RED, 1, assignments.size()) - 1;
         Assignment assignmentToRemove = assignments.remove(assignmentIndex);
+        for (Course course : courses) {
+            course.removeAssignment(assignmentToRemove);
+        }
         System.out.println(GREEN + "Assignment removed successfully.");
         rewrite();
     }
@@ -680,6 +679,9 @@ public class CLI {
         displayList(projects);
         int projectIndex = getValidatedInput(scanner, RED, 1, projects.size()) - 1;
         Project projectToRemove = projects.remove(projectIndex);
+        for (Course course : courses) {
+            course.removeProject(projectToRemove);
+        }
         System.out.println(GREEN + "Project removed successfully.");
         rewrite();
     }
@@ -841,10 +843,6 @@ public class CLI {
         if (!selectedStudent.getCourses().contains(selectedCourse)) {
             selectedCourse.addStudent(selectedStudent);
             selectedStudent.addCourse(selectedCourse);
-            Teacher courseTeacher = selectedCourse.getTeacher();
-            if (courseTeacher != null) {
-                courseTeacher.addCourse(selectedCourse);
-            }
             System.out.println(GREEN + "Student added to the course successfully!");
         } else {
             System.out.println(RED + "Student is already enrolled in this course.");
@@ -952,6 +950,3 @@ public class CLI {
     }
 
 }
-
-
-
