@@ -1,145 +1,92 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'InitialPage.dart';
 
-class ChangePasswordPage extends StatefulWidget {
+class RemoveAccountPage extends StatelessWidget {
   final String username;
-  const ChangePasswordPage({super.key, required this.username});
 
-  @override
-  _ChangePasswordPageState createState() => _ChangePasswordPageState();
-}
+  const RemoveAccountPage({super.key, required this.username});
 
-class _ChangePasswordPageState extends State<ChangePasswordPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _passwordController = TextEditingController();
-  final _verifyPasswordController = TextEditingController();
-  bool _obscurePassword = true;
-  bool _obscureVerifyPassword = true;
-  late Socket _socket;
-
-  @override
-  void initState() {
-    super.initState();
-    _connectToServer();
-  }
-
-  @override
-  void dispose() {
-    _passwordController.dispose();
-    _verifyPasswordController.dispose();
-    _socket.close();
-    super.dispose();
-  }
-
-  void _connectToServer() async {
-    _socket = await Socket.connect('127.0.0.1', 12345);
-  }
-
-  void _sendUpdatedPassword(String username, String newPassword) {
-    String message = 'CHANGE_PASSWORD $username $newPassword';
-    _socket.write(message);
-  }
-
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'رمز عبور نمی‌تواند خالی باشد';
-    }
-    if (value.length < 8) {
-      return 'رمز عبور باید حداقل 8 کاراکتر باشد';
-    }
-    bool hasUppercase = value.contains(RegExp(r'[A-Z]'));
-    bool hasLowercase = value.contains(RegExp(r'[a-z]'));
-    bool hasDigit = value.contains(RegExp(r'\d'));
-
-    if (!hasUppercase) {
-      return 'رمز عبور باید شامل حداقل یک حرف بزرگ باشد';
-    }
-    if (!hasLowercase) {
-      return 'رمز عبور باید شامل حداقل یک حرف کوچک باشد';
-    }
-    if (!hasDigit) {
-      return 'رمز عبور باید شامل حداقل یک عدد باشد';
-    }
-    return null;
-  }
-
-  String? _validateVerifyPassword(String? value) {
-    if (value != _passwordController.text) {
-      return 'رمز عبورها مطابقت ندارند';
-    }
-    return null;
-  }
-
-  void _submit() {
-    if (_formKey.currentState?.validate() ?? false) {
-      String newPassword = _passwordController.text;
-      _sendUpdatedPassword(widget.username, newPassword);
-      Navigator.pop(context);
+  void _removeAccount(BuildContext context) async {
+    bool success = await _sendRemoveAccountCommand(username);
+    if (success) {
+      await _clearSharedPreferences();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => InitialPage()),
+      );
+    } else {
+      _showErrorDialog(context);
     }
   }
 
-  void _togglePasswordVisibility() {
-    setState(() {
-      _obscurePassword = !_obscurePassword;
-    });
+  Future<bool> _sendRemoveAccountCommand(String username) async {
+    try {
+      Socket socket = await Socket.connect('127.0.0.1', 8280);
+      String message = 'REMOVE_STUDENT $username';
+      socket.write(message);
+      await socket.flush();
+      socket.close();
+      return true;
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
   }
 
-  void _toggleVerifyPasswordVisibility() {
-    setState(() {
-      _obscureVerifyPassword = !_obscureVerifyPassword;
-    });
+  Future<void> _clearSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('username');
+    await prefs.remove('password');
+  }
+
+  void _showErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text('Failed to remove account. Please try again later.'),
+          actions: [
+            ElevatedButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('ویرایش رمزعبور'),
+        title: Text('حذف حساب کاربری'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              Text(
-                "رمز عبور جدید",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('آیا از حذف حساب کاربری خود مطمئن هستید؟',
+                textAlign: TextAlign.center),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => _removeAccount(context),
+              icon: Icon(CupertinoIcons.trash, color: Colors.white),
+              label: Text('حذف حساب کاربری',
+                  style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                minimumSize: Size(1000, 56),
               ),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? CupertinoIcons.eye
-                          : CupertinoIcons.eye_slash,
-                    ),
-                    onPressed: _togglePasswordVisibility,
-                  ),
-                ),
-                validator: _validatePassword,
-              ),
-              Text(
-                "تایید رمز عبور",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14),
-              ),
-              TextFormField(
-                controller: _verifyPasswordController,
-                obscureText: true,
-                validator: _validateVerifyPassword,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _submit,
-                child: Text('ویرایش رمز عبور'),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

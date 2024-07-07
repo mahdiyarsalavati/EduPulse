@@ -18,7 +18,7 @@ class RemoveAccountPage extends StatelessWidget {
   }
 
   void _sendRemoveAccountCommand(String username) async {
-    Socket socket = await Socket.connect('127.0.0.1', 12345);
+    Socket socket = await Socket.connect('127.0.0.1', 8280);
     String message = 'REMOVE_STUDENT $username';
     socket.write(message);
     socket.close();

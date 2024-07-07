@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
 
     if (username != null && password != null) {
       try {
-        _socket = await Socket.connect('127.0.0.1', 12345);
+        _socket = await Socket.connect('127.0.0.1', 8280);
         await _autoLogin(username, password);
       } catch (e) {
       }
@@ -82,9 +82,9 @@ class _HomePageState extends State<HomePage> {
           _highestGrade = double.parse(parts[5]);
           _lowestGrade = double.parse(parts[6]);
           _activeAssignments =
-              parts.sublist(7, parts.indexOf('END_ACTIVE')).toList();
+              parts.sublist(7, parts.indexOf('END')).toList();
           _notActiveAssignments =
-              parts.sublist(parts.indexOf('END_ACTIVE') + 1).toList();
+              parts.sublist(parts.indexOf('END') + 1).toList();
           _completedAssignments = _notActiveAssignments.length;
         });
       } else {
@@ -100,7 +100,7 @@ class _HomePageState extends State<HomePage> {
 
     if (username != null && password != null) {
       try {
-        _socket = await Socket.connect('127.0.0.1', 12345);
+        _socket = await Socket.connect('127.0.0.1', 8280);
         _socket.write('LOGIN $username $password\n');
 
         _socket.listen((List<int> event) async {
@@ -118,9 +118,9 @@ class _HomePageState extends State<HomePage> {
               _highestGrade = double.parse(parts[5]);
               _lowestGrade = double.parse(parts[6]);
               _activeAssignments =
-                  parts.sublist(7, parts.indexOf('END_ACTIVE')).toList();
+                  parts.sublist(7, parts.indexOf('END')).toList();
               _notActiveAssignments =
-                  parts.sublist(parts.indexOf('END_ACTIVE') + 1).toList();
+                  parts.sublist(parts.indexOf('END') + 1).toList();
               _completedAssignments = _notActiveAssignments.length;
             });
           } else {

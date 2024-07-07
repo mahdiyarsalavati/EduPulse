@@ -29,7 +29,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
   }
 
   void _connectSocket() async {
-    _socket = await Socket.connect('127.0.0.1', 12345);
+    _socket = await Socket.connect('127.0.0.1', 8280);
     _fetchAssignments();
   }
 
@@ -39,7 +39,6 @@ class _AssignmentPageState extends State<AssignmentPage> {
     _socket.listen((data) {
       String response = String.fromCharCodes(data).trim();
       if (response.isNotEmpty) {
-        response = response.replaceFirst('ASSIGNMENT ', '');
         List<String> assignmentDetails = response.split(' ASSIGNMENT ');
         setState(() {
           _assignments = assignmentDetails

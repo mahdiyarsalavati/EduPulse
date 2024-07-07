@@ -24,7 +24,7 @@ class _CoursesPageState extends State<CoursesPage> {
   }
 
   void _connectSocket() async {
-    _socket = await Socket.connect('127.0.0.1', 12345);
+    _socket = await Socket.connect('127.0.0.1', 8280);
     _fetchCourses();
   }
 
@@ -48,7 +48,7 @@ class _CoursesPageState extends State<CoursesPage> {
     setState(() {
       _pendingCourses.add(Course(courseCode, '...', '0', 0, '...', true));
     });
-    Socket socket = await Socket.connect('127.0.0.1', 12345);
+    Socket socket = await Socket.connect('127.0.0.1', 8280);
     socket.write('REQUEST_JOIN_COURSE ${widget.username} $courseCode\n');
     socket.flush();
     socket.listen((data) {
