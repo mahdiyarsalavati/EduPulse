@@ -842,7 +842,6 @@ public class CLI {
 
         if (!selectedStudent.getCourses().contains(selectedCourse)) {
             selectedCourse.addStudent(selectedStudent);
-            selectedStudent.addCourse(selectedCourse);
             System.out.println(GREEN + "Student added to the course successfully!");
         } else {
             System.out.println(RED + "Student is already enrolled in this course.");

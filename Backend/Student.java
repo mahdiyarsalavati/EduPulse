@@ -62,7 +62,8 @@ public class Student extends Person {
         }
         this.averageGrade = totalGrade / totalCredits;
         String temp = String.valueOf(this.averageGrade);
-        temp = temp.substring(0, 5);
+        if(temp.length() > 4) {
+        temp = temp.substring(0, 5);}
         this.averageGrade = Double.parseDouble(temp);
     }
 
@@ -118,10 +119,17 @@ public class Student extends Person {
     }
 
     public Double getHighestGrade() {
+        if (getGrades().isEmpty()) {
+            return 0.0;
+        }
         return Collections.max(getGrades());
     }
 
+
     public Double getLowestGrade() {
+        if (getGrades().isEmpty()) {
+            return 0.0;
+        }
         return Collections.min(getGrades());
     }
 

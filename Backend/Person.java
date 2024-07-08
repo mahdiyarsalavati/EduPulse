@@ -43,7 +43,8 @@ public class Person {
     }
 
     public void addCourse(Course course) {
-        courses.add(course);
+        if (!courses.contains(course))
+            courses.add(course);
         this.coursesLength++;
     }
 

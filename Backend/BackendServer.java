@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 
 public class BackendServer {
 
-    private static final int PORT = 8280;
+    private static final int PORT = 12345;
     private static final String TEACHERS_FILE = "Backend/assets/teachers.txt";
     private static final String STUDENTS_FILE = "Backend/assets/students.txt";
     private static final String COURSES_FILE = "Backend/assets/courses.txt";
@@ -92,7 +92,9 @@ public class BackendServer {
                 String request;
                 while ((request = in.readLine()) != null) {
                     String response = processRequest(request);
+                    System.out.println("REQUEST: " + request);
                     out.println(response);
+                    System.out.println("RESPONSE: " + response);
                 }
 
             } catch (IOException e) {
@@ -105,7 +107,6 @@ public class BackendServer {
             String[] parts = request.split(" ");
             String command = parts[0];
             String response = "";
-            System.out.println(request);
 
             switch (command) {
                 case "GET_ASSIGNMENTS":
