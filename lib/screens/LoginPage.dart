@@ -1,7 +1,9 @@
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'HomePage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -23,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _connectToSocket() async {
-    _socket = await Socket.connect('127.0.0.1', 8280);
+    _socket = await Socket.connect('127.0.0.1', 12345);
     _socket.listen((List<int> event) {
       final response = String.fromCharCodes(event).trim();
       _handleSocketResponse(response);

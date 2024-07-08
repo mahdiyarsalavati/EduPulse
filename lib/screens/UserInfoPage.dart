@@ -1,7 +1,8 @@
 import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'ChangePassword.dart';
 import 'EditInfoPage.dart';
@@ -47,9 +48,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
 
   Future<void> _connectToSocket() async {
     try {
-      _socket = await Socket.connect('127.0.0.1', 8280);
+      _socket = await Socket.connect('127.0.0.1', 12345);
       _socket.listen(
-        (data) {
+            (data) {
           String response = String.fromCharCodes(data).trim();
           _handleSocketResponse(response);
         },
@@ -129,101 +130,101 @@ class _UserInfoPageState extends State<UserInfoPage> {
       body: _loading
           ? Center(child: CircularProgressIndicator())
           : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            GestureDetector(
+              onTap: () async {
+                final action = await showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('یک گزینه را انتخاب کنید',
+                        textAlign: TextAlign.center),
+                    actions: <Widget>[
+                      TextButton(
+                          onPressed: () =>
+                              Navigator.pop(context, 'Gallery'),
+                          child: const Text('گالری')),
+                      TextButton(
+                          onPressed: () =>
+                              Navigator.pop(context, 'Camera'),
+                          child: const Text('دوربین')),
+                    ],
+                  ),
+                );
+                if (action == 'Gallery') {
+                  _pickImage(ImageSource.gallery);
+                } else if (action == 'Camera') {
+                  _pickImage(ImageSource.camera);
+                }
+              },
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  GestureDetector(
-                    onTap: () async {
-                      final action = await showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text('یک گزینه را انتخاب کنید',
-                              textAlign: TextAlign.center),
-                          actions: <Widget>[
-                            TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, 'Gallery'),
-                                child: const Text('گالری')),
-                            TextButton(
-                                onPressed: () =>
-                                    Navigator.pop(context, 'Camera'),
-                                child: const Text('دوربین')),
-                          ],
-                        ),
-                      );
-                      if (action == 'Gallery') {
-                        _pickImage(ImageSource.gallery);
-                      } else if (action == 'Camera') {
-                        _pickImage(ImageSource.camera);
-                      }
-                    },
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundImage: _avatarUrl.isNotEmpty
-                              ? FileImage(File(_avatarUrl))
-                              : null,
-                          child: _avatarUrl.isEmpty
-                              ? Icon(CupertinoIcons.person_alt_circle, size: 50)
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text('$_firstName $_lastName',
-                      textAlign: TextAlign.center,
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  Expanded(
-                    child: Directionality(
-                      textDirection: TextDirection.rtl,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildInfoRow(
-                              'شماره دانشجویی', toPersian(widget.username)),
-                          _buildInfoRow(
-                              'ترم جاری', semesterToPersian(_semester)),
-                          _buildInfoRow('تعداد واحد', toPersian(_creditUnit)),
-                          _buildInfoRow('معدل کل', toPersian(_averageGrade)),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: _editInfo,
-                    icon: Icon(CupertinoIcons.pencil),
-                    label: Text('ویرایش مشخصات'),
-                    style:
-                        ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
-                  ),
-                  SizedBox(height: 10),
-                  ElevatedButton.icon(
-                    onPressed: _changePassword,
-                    icon: Icon(CupertinoIcons.lock),
-                    label: Text('ویرایش رمز عبور'),
-                    style:
-                        ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
-                  ),
-                  SizedBox(height: 10),
-                  ElevatedButton.icon(
-                    onPressed: _removeAccount,
-                    icon: Icon(CupertinoIcons.trash, color: Colors.white),
-                    label: Text('حذف حساب کاربری',
-                        style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        minimumSize: Size(1000, 56)),
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: _avatarUrl.isNotEmpty
+                        ? FileImage(File(_avatarUrl))
+                        : null,
+                    child: _avatarUrl.isEmpty
+                        ? Icon(CupertinoIcons.person_alt_circle, size: 50)
+                        : null,
                   ),
                 ],
               ),
             ),
+            SizedBox(height: 10),
+            Text('$_firstName $_lastName',
+                textAlign: TextAlign.center,
+                style:
+                TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            SizedBox(height: 20),
+            Expanded(
+              child: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow(
+                        'شماره دانشجویی', toPersian(widget.username)),
+                    _buildInfoRow(
+                        'ترم جاری', semesterToPersian(_semester)),
+                    _buildInfoRow('تعداد واحد', toPersian(_creditUnit)),
+                    _buildInfoRow('معدل کل', toPersian(_averageGrade)),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _editInfo,
+              icon: Icon(CupertinoIcons.pencil),
+              label: Text('ویرایش مشخصات'),
+              style:
+              ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _changePassword,
+              icon: Icon(CupertinoIcons.lock),
+              label: Text('ویرایش رمز عبور'),
+              style:
+              ElevatedButton.styleFrom(minimumSize: Size(1000, 56)),
+            ),
+            SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: _removeAccount,
+              icon: Icon(CupertinoIcons.trash, color: Colors.white),
+              label: Text('حذف حساب کاربری',
+                  style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  minimumSize: Size(1000, 56)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

@@ -1,8 +1,9 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AssignmentPage extends StatefulWidget {
   final String username;
@@ -29,7 +30,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
   }
 
   void _connectSocket() async {
-    _socket = await Socket.connect('127.0.0.1', 8280);
+    _socket = await Socket.connect('127.0.0.1', 12345);
     _fetchAssignments();
   }
 
@@ -39,6 +40,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
     _socket.listen((data) {
       String response = String.fromCharCodes(data).trim();
       if (response.isNotEmpty) {
+        response = response.replaceFirst('ASSIGNMENT ', '');
         List<String> assignmentDetails = response.split(' ASSIGNMENT ');
         setState(() {
           _assignments = assignmentDetails
@@ -170,7 +172,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
   void _showAssignmentDialog(
       Assignment assignment, bool isCompleted, int estimatedTime) {
     TextEditingController _estimatedTimeController =
-        TextEditingController(text: estimatedTime.toString());
+    TextEditingController(text: estimatedTime.toString());
     TextEditingController _descriptionController = TextEditingController();
     File? selectedFile;
 
@@ -210,7 +212,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 ElevatedButton(
                   onPressed: () async {
                     FilePickerResult? result =
-                        await FilePicker.platform.pickFiles(
+                    await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf'],
                     );
@@ -231,7 +233,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                   _saveCompletionStatus(assignment.name, true);
                 }
                 _saveEstimatedTime(assignment.name,
-                        int.parse(_estimatedTimeController.text))
+                    int.parse(_estimatedTimeController.text))
                     .then((_) {
                   setState(() {
                     _estimatedTimes[assignment.name] =

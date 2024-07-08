@@ -1,10 +1,12 @@
 import 'dart:io';
+
 import 'package:EDUPULSE/screens/AssignmentsPage.dart';
 import 'package:EDUPULSE/screens/CoursesPage.dart';
 import 'package:EDUPULSE/screens/NewsPage.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'ToDoPage.dart';
 import 'UserInfoPage.dart';
 
@@ -55,7 +57,7 @@ class _HomePageState extends State<HomePage> {
 
     if (username != null && password != null) {
       try {
-        _socket = await Socket.connect('127.0.0.1', 8280);
+        _socket = await Socket.connect('127.0.0.1', 12345);
         await _autoLogin(username, password);
       } catch (e) {
       }
@@ -100,7 +102,7 @@ class _HomePageState extends State<HomePage> {
 
     if (username != null && password != null) {
       try {
-        _socket = await Socket.connect('127.0.0.1', 8280);
+        _socket = await Socket.connect('127.0.0.1', 12345);
         _socket.write('LOGIN $username $password\n');
 
         _socket.listen((List<int> event) async {
@@ -251,22 +253,22 @@ class _HomePageState extends State<HomePage> {
                 isStringListEmpty(_activeAssignments)
                     ? Center(child: Text('تسکی وجود نداره'))
                     : Column(
-                        children: _activeAssignments
-                            .map((assignment) =>
-                                _buildTaskCard(assignment, isActive: true))
-                            .toList(),
-                      ),
+                  children: _activeAssignments
+                      .map((assignment) =>
+                      _buildTaskCard(assignment, isActive: true))
+                      .toList(),
+                ),
                 SizedBox(height: 40),
                 _buildSectionTitle('کارهای انجام شده'),
                 SizedBox(height: 10),
                 _notActiveAssignments.isEmpty
                     ? Center(child: Text('تسکی وجود نداره'))
                     : Column(
-                        children: _notActiveAssignments
-                            .map((assignment) =>
-                                _buildTaskCard(assignment, isActive: false))
-                            .toList(),
-                      ),
+                  children: _notActiveAssignments
+                      .map((assignment) =>
+                      _buildTaskCard(assignment, isActive: false))
+                      .toList(),
+                ),
                 SizedBox(height: 200),
               ],
             ),
@@ -325,18 +327,18 @@ class _HomePageState extends State<HomePage> {
         title: Text(task),
         trailing: isActive
             ? IconButton(
-                icon: Icon(CupertinoIcons.check_mark_circled,
-                    color: Colors.blueAccent),
-                onPressed: () {
-                  _completeTask(task);
-                },
-              )
+          icon: Icon(CupertinoIcons.check_mark_circled,
+              color: Colors.blueAccent),
+          onPressed: () {
+            _completeTask(task);
+          },
+        )
             : IconButton(
-                icon: Icon(CupertinoIcons.clear_circled, color: Colors.red),
-                onPressed: () {
-                  _revertTask(task);
-                },
-              ),
+          icon: Icon(CupertinoIcons.clear_circled, color: Colors.red),
+          onPressed: () {
+            _revertTask(task);
+          },
+        ),
       ),
     );
   }

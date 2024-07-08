@@ -1,9 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'dart:convert';
 
 class TodoScreen extends StatefulWidget {
   final String username;
@@ -17,7 +18,7 @@ class TodoScreen extends StatefulWidget {
 class _TodoScreenState extends State<TodoScreen> {
   final List<Map<String, dynamic>> _tasks = [];
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
 
   @override
   void initState() {
@@ -28,10 +29,10 @@ class _TodoScreenState extends State<TodoScreen> {
 
   void _initializeNotifications() async {
     const DarwinInitializationSettings initializationSettingsIOS =
-        DarwinInitializationSettings();
+    DarwinInitializationSettings();
 
     final InitializationSettings initializationSettings =
-        InitializationSettings(
+    InitializationSettings(
       iOS: initializationSettingsIOS,
     );
 
@@ -204,7 +205,7 @@ class _TodoScreenState extends State<TodoScreen> {
                   _selectedTime.minute,
                 );
                 final formattedDateTime =
-                    DateFormat('yyyy-MM-dd – kk:mm').format(dateTime);
+                DateFormat('yyyy-MM-dd – kk:mm').format(dateTime);
                 if (title.isNotEmpty) {
                   _addTask(title, formattedDateTime);
                   _scheduleNotification(title, dateTime);
@@ -229,7 +230,7 @@ class _TodoScreenState extends State<TodoScreen> {
   void _scheduleNotification(String title, DateTime scheduledTime) async {
     final int notificationId = _tasks.length;
     final tz.TZDateTime scheduledTZDateTime =
-        tz.TZDateTime.from(scheduledTime, tz.local);
+    tz.TZDateTime.from(scheduledTime, tz.local);
 
     await flutterLocalNotificationsPlugin.zonedSchedule(
       notificationId,
@@ -241,7 +242,7 @@ class _TodoScreenState extends State<TodoScreen> {
       ),
       androidAllowWhileIdle: true,
       uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
@@ -252,7 +253,7 @@ class _TodoScreenState extends State<TodoScreen> {
         return AlertDialog(
           title: Text('حذف تمام کارها'),
           content:
-              Text('آیا مطمئن هستید که می‌خواهید تمام کارهای خود را حذف کنید؟'),
+          Text('آیا مطمئن هستید که می‌خواهید تمام کارهای خود را حذف کنید؟'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),

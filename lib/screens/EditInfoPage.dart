@@ -41,7 +41,7 @@ class _EditInfoPageState extends State<EditInfoPage> {
   }
 
   void _connectToServer() async {
-    _socket = await Socket.connect('127.0.0.1', 8280);
+    _socket = await Socket.connect('127.0.0.1', 12345);
   }
 
   void _sendUpdatedInfo(String username, String firstName, String lastName) {

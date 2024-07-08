@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -14,7 +15,7 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _verifyPasswordController =
-      TextEditingController();
+  TextEditingController();
   bool _obscureText = true;
   late Socket _socket;
 
@@ -25,7 +26,7 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Future<void> _connectToSocket() async {
-    _socket = await Socket.connect('127.0.0.1', 8280);
+    _socket = await Socket.connect('127.0.0.1', 12345);
     _socket.listen((List<int> event) {
       final response = String.fromCharCodes(event).trim();
       _handleSocketResponse(response);
@@ -164,7 +165,7 @@ class _SignupPageState extends State<SignupPage> {
                   decoration: InputDecoration(
                     labelText: 'نام',
                     prefixIcon:
-                        Icon(CupertinoIcons.person, color: Colors.blueAccent),
+                    Icon(CupertinoIcons.person, color: Colors.blueAccent),
                   ),
                   validator: _validateName,
                 ),
@@ -174,7 +175,7 @@ class _SignupPageState extends State<SignupPage> {
                   decoration: InputDecoration(
                     labelText: 'نام خانوادگی',
                     prefixIcon:
-                        Icon(CupertinoIcons.person, color: Colors.blueAccent),
+                    Icon(CupertinoIcons.person, color: Colors.blueAccent),
                   ),
                   validator: _validateName,
                 ),
@@ -195,7 +196,7 @@ class _SignupPageState extends State<SignupPage> {
                   decoration: InputDecoration(
                     labelText: 'رمز عبور',
                     prefixIcon:
-                        Icon(CupertinoIcons.lock, color: Colors.blueAccent),
+                    Icon(CupertinoIcons.lock, color: Colors.blueAccent),
                     suffixIcon: IconButton(
                       icon: Icon(_obscureText
                           ? CupertinoIcons.eye
@@ -212,7 +213,7 @@ class _SignupPageState extends State<SignupPage> {
                   decoration: InputDecoration(
                     labelText: 'تایید رمز عبور',
                     prefixIcon:
-                        Icon(CupertinoIcons.lock, color: Colors.blueAccent),
+                    Icon(CupertinoIcons.lock, color: Colors.blueAccent),
                   ),
                   validator: _validateVerifyPassword,
                 ),
