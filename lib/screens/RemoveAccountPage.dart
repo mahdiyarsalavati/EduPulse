@@ -1,6 +1,8 @@
 import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'InitialPage.dart';
 
@@ -9,19 +11,27 @@ class RemoveAccountPage extends StatelessWidget {
 
   const RemoveAccountPage({super.key, required this.username});
 
-  void _removeAccount(BuildContext context) {
-    _sendRemoveAccountCommand(username);
-    Navigator.push(
+  void _removeAccount(BuildContext context) async {
+    await _sendRemoveAccountCommand(username);
+    await _removeUsernameFromPreferences();
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => InitialPage()),
+      (Route<dynamic> route) => false,
     );
   }
 
-  void _sendRemoveAccountCommand(String username) async {
+  Future<void> _sendRemoveAccountCommand(String username) async {
     Socket socket = await Socket.connect('127.0.0.1', 12345);
     String message = 'REMOVE_STUDENT $username';
     socket.write(message);
+    await socket.flush();
     socket.close();
+  }
+
+  Future<void> _removeUsernameFromPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('username');
   }
 
   @override

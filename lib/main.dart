@@ -1,14 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:EDUPULSE/screens/HomePage.dart';
 import 'package:EDUPULSE/screens/InitialPage.dart';
 import 'package:EDUPULSE/screens/LoginPage.dart';
-import 'package:EDUPULSE/screens/HomePage.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
-import 'package:shared_preferences/shared_preferences.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
+FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +18,7 @@ void main() async {
   tz.setLocalLocation(tz.getLocation(timeZoneName));
 
   const DarwinInitializationSettings initializationSettingsIOS =
-      DarwinInitializationSettings();
+  DarwinInitializationSettings();
 
   final InitializationSettings initializationSettings = InitializationSettings(
     iOS: initializationSettingsIOS,

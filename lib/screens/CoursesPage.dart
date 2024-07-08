@@ -1,6 +1,7 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class CoursesPage extends StatefulWidget {
   final String username;
@@ -46,7 +47,7 @@ class _CoursesPageState extends State<CoursesPage> {
 
   void _requestJoinCourse(String courseCode) async {
     setState(() {
-      _pendingCourses.add(Course(courseCode, '...', '0', 0, '...', true));
+      _pendingCourses.add(Course(courseCode, '...', '0', 0, '...'));
     });
     Socket socket = await Socket.connect('127.0.0.1', 12345);
     socket.write('REQUEST_JOIN_COURSE ${widget.username} $courseCode\n');
@@ -152,12 +153,11 @@ class _CoursesPageState extends State<CoursesPage> {
             ),
             Expanded(
               child: ListView(
-                children: _courses
-                        .map((course) => CourseCard(course))
-                        .toList() +
-                    _pendingCourses
-                        .map((course) => CourseCard(course, isPending: true))
-                        .toList(),
+                children:
+                    _courses.map((course) => CourseCard(course)).toList() +
+                        _pendingCourses
+                            .map((course) => CourseCard(course))
+                            .toList(),
               ),
             ),
           ],
@@ -173,11 +173,14 @@ class Course {
   final String creditUnit;
   final int noOfAssignments;
   final String bestStudent;
-  final bool isPending;
 
-  Course(this.name, this.teacherName, this.creditUnit, this.noOfAssignments,
-      this.bestStudent,
-      [this.isPending = false]);
+  Course(
+    this.name,
+    this.teacherName,
+    this.creditUnit,
+    this.noOfAssignments,
+    this.bestStudent,
+  );
 
   factory Course.fromString(String str) {
     List<String> parts = str.trim().split(' ');
@@ -187,56 +190,63 @@ class Course {
 
 class CourseCard extends StatelessWidget {
   final Course course;
-  final bool isPending;
 
-  const CourseCard(this.course, {this.isPending = false});
+  const CourseCard(this.course);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: isPending ? Colors.grey : Colors.deepPurple,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          textDirection: TextDirection.rtl,
-          children: [
-            Text(
-              course.name,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 7, 0, 7),
+      child: Container(
+        decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+            gradient: LinearGradient(
+                colors: [Colors.deepPurple, Colors.black],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            textDirection: TextDirection.rtl,
+            children: [
+              Text(
+                course.name,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
               ),
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-            ),
-            Divider(color: Colors.white),
-            Text(
-              'استاد: ${course.teacherName}',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-            ),
-            Text(
-              'تعداد واحد: ${course.creditUnit}',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-            ),
-            Text(
-              'تکالیف باقی‌مانده: ${course.noOfAssignments}',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-            ),
-            Text(
-              'دانشجوی ممتاز: ${course.bestStudent}',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-              textAlign: TextAlign.right,
-              textDirection: TextDirection.rtl,
-            ),
-          ],
+              Divider(color: Colors.white),
+              Text(
+                'استاد: ${course.teacherName}',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+                textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
+              ),
+              Text(
+                'تعداد واحد: ${course.creditUnit}',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+                textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
+              ),
+              Text(
+                'تکالیف باقی‌مانده: ${course.noOfAssignments}',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+                textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
+              ),
+              Text(
+                'دانشجوی ممتاز: ${course.bestStudent}',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+                textAlign: TextAlign.right,
+                textDirection: TextDirection.rtl,
+              ),
+            ],
+          ),
         ),
       ),
     );
