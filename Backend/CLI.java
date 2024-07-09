@@ -462,13 +462,18 @@ public class CLI {
         int teacherIndex = getValidatedInput(scanner, RED, 1, teachers.size()) - 1;
         Teacher teacherToRemove = teachers.remove(teacherIndex);
 
-        courses.forEach(course -> {
-            if (course.getTeacher().equals(teacherToRemove)) {
-                course.setTeacher(null);
+        List<Course> coursesToRemove = new ArrayList<>();
+        for (Course course : courses) {
+            if (course.getTeacher() != null && course.getTeacher().equals(teacherToRemove)) {
+                coursesToRemove.add(course);
             }
-        });
+        }
+        for (Course course : coursesToRemove) {
+            removeCourseFromAllObjects(course);
+            courses.remove(course);
+        }
 
-        System.out.println(GREEN + "Teacher removed successfully.");
+        System.out.println(GREEN + "Teacher and their associated courses removed successfully.");
         rewrite();
     }
 

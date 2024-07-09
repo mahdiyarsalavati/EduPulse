@@ -92,7 +92,7 @@ public class BackendServer {
                 String request;
                 while ((request = in.readLine()) != null) {
                     String response = processRequest(request);
-                    System.out.println("REQUEST: " + request);
+                    System.out.println("-----------------\nREQUEST: " + request);
                     out.println(response);
                     System.out.println("RESPONSE: " + response);
                 }
@@ -160,16 +160,7 @@ public class BackendServer {
                     .anyMatch(x -> x.getID().equals(username) && Arrays.equals(x.getPassword(), password));
 
             if (exists) {
-                Student loggedInStudent = getStudentByUsername(username);
-                String response = "LOGIN_SUCCESS " + loggedInStudent.getFirstName() + " " + loggedInStudent.getLastName();
-                response += " " + loggedInStudent.getAssignments().size();
-                response += " " + loggedInStudent.getCourses().size();
-                response += " " + loggedInStudent.getHighestGrade();
-                response += " " + loggedInStudent.getLowestGrade();
-                response += " " + listOfAssignments(username);
-                response += " END";
-                response += " " + listOfNotActiveAssignments(username);
-                return response;
+                return "LOGIN_SUCCESS";
             }
 
             return "LOGIN_FAILED";
