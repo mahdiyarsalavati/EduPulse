@@ -1,7 +1,7 @@
 # EduPulse
 (SBU AP Project Spring 2024)
 
-![EduPulse Logo](assets/icons/app_icon.png)
+![EduPulse Logo](assets/icons/app_icon_small.png)
 
 ## Overview
 
@@ -12,6 +12,8 @@ EduPulse is a university management system comprising a console-based Java serve
 - Manage teachers, students, courses, assignments, and projects through the terminal.
 - Real-time synchronization between the Flutter app and Java server.
 - Optimized for iOS devices.
+- The Flutter app includes a built-in to-do list with local notifications for tasks and assignments.
+- Users can select and send assignment files directly through the app.
 
 ## Getting Started
 
@@ -58,19 +60,18 @@ EduPulse is a university management system comprising a console-based Java serve
 2. **Run the Flutter App:**
    Use the Flutter app on your iOS device or simulator to interact with the server. The app provides an intuitive interface for managing university operations.
 
-   ![Flutter App](initialPage.png)
+   ![Flutter App](initialPage_small.png)
 
 3. **Terminal Operations:**
    In the terminal using CLI.java, teachers and admins can add or remove courses, students, and assignments.
 
 ## Screenshots
 
-![Signup Page](signupPage.png)
-![Home Page](homePage1.png)
-![UserInfo Page](userInfoPage.png)
-![Courses Page](coursesPage.png)
+![Signup Page | 250x500](signupPage_small.png)
+![Home Page | 250x500](homePage1_small.png)
+![UserInfo Page | 250x500](userInfoPage_small.png)
+![Courses Page | 250x500](coursesPage_small.png)
 
 ## Contact
 
 Mahdiyar Salavati - [mahdiyarultra@gmail.com](mailto:mahdiyarultra@gmail.com)
-
