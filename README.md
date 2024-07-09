@@ -1,7 +1,9 @@
 # EduPulse
 (SBU AP Project Spring 2024)
 
-<img src="assets/icons/app_icon.png" width="100" height="100" alt="EduPulse Logo">
+<p align="center">
+  <img src="assets/icons/app_icon.png" width="100" alt="EduPulse Logo">
+</p>
 
 ## Overview
 
@@ -58,20 +60,20 @@ EduPulse is a university management system comprising a console-based Java serve
 
    
 2. **Run the Flutter App:**
-   Use the Flutter app on your iOS device or simulator to interact with the server. The app provides an intuitive interface for managing university operations.
-
-   <img src="initialPage.png" width="250" height="500" alt="Flutter App">
+   <p align="center">
+     <img src="initialPage.png" width="250" alt="Flutter App">
+   </p>
 
 3. **Terminal Operations:**
    In the terminal using CLI.java, teachers and admins can add or remove courses, students, and assignments.
 
 ## Screenshots
 
-<div style="display:flex; justify-content:space-between; align-items:center;">
-   <img src="signupPage.png" width="250" height="500" alt="Signup Page">
-   <img src="homePage1.png" width="250" height="500" alt="Home Page">
-   <img src="userInfoPage.png" width="250" height="500" alt="UserInfo Page">
-   <img src="coursesPage.png" width="250" height="500" alt="Courses Page">
+<div align="center" style="display:flex; justify-content:center; align-items:center; gap: 10px;">
+   <img src="signupPage.png" width="250" alt="Signup Page">
+   <img src="homePage1.png" width="250" alt="Home Page">
+   <img src="userInfoPage.png" width="250" alt="UserInfo Page">
+   <img src="coursesPage.png" width="250" alt="Courses Page">
 </div>
 
 ## Contact
