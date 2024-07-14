@@ -35,7 +35,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
   }
 
   void _fetchAssignments() {
-    _socket.write('GET_ASSIGNMENTS ${widget.username}\n');
+    _socket.write('GET_ASSIGNMENTS ' + widget.username + '\n');
     _socket.flush();
     _socket.listen((data) {
       String response = String.fromCharCodes(data).trim();
@@ -43,18 +43,21 @@ class _AssignmentPageState extends State<AssignmentPage> {
         response = response.replaceFirst('ASSIGNMENT ', '');
         List<String> assignmentDetails = response.split(' ASSIGNMENT ');
         setState(() {
-          _assignments = assignmentDetails
-              .where((detail) => detail.isNotEmpty)
-              .map((detail) => Assignment.fromString(detail))
-              .toList();
+          _assignments.clear();
+          for (var detail in assignmentDetails) {
+            if (detail.isNotEmpty) {
+              _assignments.add(Assignment.fromString(detail));
+            }
+          }
         });
+
         _loadCompletionStatus();
         _loadEstimatedTimes();
       }
     });
   }
 
-  Future<void> _saveCompletionStatus(String name, bool isCompleted) async {
+  Future<void> saveDoneUndoneStatus(String name, bool isCompleted) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool(name, isCompleted);
     setState(() {
@@ -99,6 +102,68 @@ class _AssignmentPageState extends State<AssignmentPage> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> assignmentWidgets = [];
+    for (var assignment in _assignments) {
+      bool isCompleted = _isCompleted[assignment.name] ?? false;
+      int estimatedTime =
+          _estimatedTimes[assignment.name] ?? assignment.estimatedTime;
+
+      assignmentWidgets.add(
+        GestureDetector(
+          onTap: () => assignmentOnTap(assignment, isCompleted, estimatedTime),
+          child: Stack(
+            children: [
+              Card(
+                color: isCompleted ? Colors.grey : Colors.deepPurple,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      Text(
+                        assignment.name,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.right,
+                        textDirection: TextDirection.rtl,
+                      ),
+                      Divider(color: Colors.white, thickness: 2),
+                      Text(
+                        'مهلت: ' + assignment.deadline,
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                        textAlign: TextAlign.right,
+                        textDirection: TextDirection.rtl,
+                      ),
+                      Text(
+                        'زمان تخمینی: ' + estimatedTime.toString(),
+                        style: TextStyle(color: Colors.white, fontSize: 14),
+                        textAlign: TextAlign.right,
+                        textDirection: TextDirection.rtl,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (isCompleted)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Icon(
+                    CupertinoIcons.check_mark_circled_solid,
+                    size: 40,
+                    color: Colors.green,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('تمرین‌ها'),
@@ -106,74 +171,17 @@ class _AssignmentPageState extends State<AssignmentPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
-          children: _assignments.map((assignment) {
-            bool isCompleted = _isCompleted[assignment.name] ?? false;
-            int estimatedTime =
-                _estimatedTimes[assignment.name] ?? assignment.estimatedTime;
-            return GestureDetector(
-              onTap: () =>
-                  _showAssignmentDialog(assignment, isCompleted, estimatedTime),
-              child: Stack(
-                children: [
-                  Card(
-                    color: isCompleted ? Colors.grey : Colors.deepPurple,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        textDirection: TextDirection.rtl,
-                        children: [
-                          Text(
-                            assignment.name,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.right,
-                            textDirection: TextDirection.rtl,
-                          ),
-                          Divider(color: Colors.white, thickness: 2),
-                          Text(
-                            'مهلت: ${assignment.deadline}',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                            textAlign: TextAlign.right,
-                            textDirection: TextDirection.rtl,
-                          ),
-                          Text(
-                            'زمان تخمینی: $estimatedTime ساعت',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                            textAlign: TextAlign.right,
-                            textDirection: TextDirection.rtl,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (isCompleted)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Icon(
-                        CupertinoIcons.check_mark_circled_solid,
-                        size: 40,
-                        color: Colors.green,
-                      ),
-                    ),
-                ],
-              ),
-            );
-          }).toList(),
+          children: assignmentWidgets,
         ),
       ),
     );
   }
 
-  void _showAssignmentDialog(
+  void assignmentOnTap(
       Assignment assignment, bool isCompleted, int estimatedTime) {
-    TextEditingController _estimatedTimeController =
-    TextEditingController(text: estimatedTime.toString());
-    TextEditingController _descriptionController = TextEditingController();
+    TextEditingController _estimatedTime =
+        TextEditingController(text: estimatedTime.toString());
+    TextEditingController _description = TextEditingController();
     File? selectedFile;
 
     showDialog(
@@ -187,14 +195,14 @@ class _AssignmentPageState extends State<AssignmentPage> {
               textDirection: TextDirection.rtl,
               children: [
                 Text("عنوان:"),
-                Text(' ${assignment.name}'),
+                Text( assignment.name),
                 SizedBox(height: 8),
                 Text("مهلت:"),
-                Text(' ${assignment.deadline}'),
+                Text(assignment.deadline),
                 SizedBox(height: 8),
                 Text("زمان تخمینی باقی‌مانده:"),
                 TextField(
-                  controller: _estimatedTimeController,
+                  controller: _estimatedTime,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
@@ -202,7 +210,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 SizedBox(height: 8),
                 Text('توضیحات:'),
                 TextField(
-                  controller: _descriptionController,
+                  controller: _description,
                   textAlign: TextAlign.right,
                   textDirection: TextDirection.rtl,
                 ),
@@ -212,7 +220,7 @@ class _AssignmentPageState extends State<AssignmentPage> {
                 ElevatedButton(
                   onPressed: () async {
                     FilePickerResult? result =
-                    await FilePicker.platform.pickFiles(
+                        await FilePicker.platform.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf'],
                     );
@@ -227,18 +235,18 @@ class _AssignmentPageState extends State<AssignmentPage> {
           ),
           actions: [
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(context).pop();
+
                 if (selectedFile != null) {
-                  _saveCompletionStatus(assignment.name, true);
+                  saveDoneUndoneStatus(assignment.name, true);
                 }
-                _saveEstimatedTime(assignment.name,
-                    int.parse(_estimatedTimeController.text))
-                    .then((_) {
-                  setState(() {
-                    _estimatedTimes[assignment.name] =
-                        int.parse(_estimatedTimeController.text);
-                  });
+
+                int estimatedTime = int.parse(_estimatedTime.text);
+                await _saveEstimatedTime(assignment.name, estimatedTime);
+
+                setState(() {
+                  _estimatedTimes[assignment.name] = estimatedTime;
                 });
               },
               child: Text('ثبت'),

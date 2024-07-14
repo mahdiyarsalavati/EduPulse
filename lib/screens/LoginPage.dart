@@ -13,8 +13,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _password = TextEditingController();
   bool _obscureText = true;
   late Socket _socket;
 
@@ -26,31 +26,21 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _connectToSocket() async {
     _socket = await Socket.connect('127.0.0.1', 12345);
-    _socket.listen((List<int> event) {
-      final response = String.fromCharCodes(event).trim();
-      _handleSocketResponse(response);
-    }, onError: (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('ارتباط موفقیت آمیز نبود.',
-                textAlign: TextAlign.right, textDirection: TextDirection.rtl)),
-      );
-    });
   }
 
   @override
   void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
+    _username.dispose();
+    _password.dispose();
     _socket.close();
     super.dispose();
   }
 
-  void _handleSocketResponse(String response) async {
+  void loginLogic(String response) async {
     if (response.startsWith('LOGIN_SUCCESS')) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username', _usernameController.text);
-      await prefs.setString('password', _passwordController.text);
+      await prefs.setString('username', _username.text);
+      await prefs.setString('password', _password.text);
 
       Navigator.pushReplacement(
         context,
@@ -69,8 +59,11 @@ class _LoginPageState extends State<LoginPage> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      _socket.write(
-          'LOGIN ${_usernameController.text} ${_passwordController.text}\n');
+      _socket.write('LOGIN ' + _username.text + ' ' + _password.text + '\n');
+      _socket.listen((List<int> event) {
+        final response = String.fromCharCodes(event).trim();
+        loginLogic(response);
+      });
     }
   }
 
@@ -79,14 +72,10 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("ورود"),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Form(
             key: _formKey,
             child: Center(
@@ -111,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 40),
                   TextFormField(
-                    controller: _usernameController,
+                    controller: _username,
                     decoration: const InputDecoration(
                       labelText: "نام کاربری",
                       prefixIcon: Padding(
@@ -124,14 +113,14 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 30),
                   TextFormField(
-                    controller: _passwordController,
+                    controller: _password,
                     obscureText: _obscureText,
                     decoration: InputDecoration(
                       labelText: "رمز عبور",
                       prefixIcon: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child:
-                        Icon(CupertinoIcons.lock, color: Colors.blueAccent),
+                            Icon(CupertinoIcons.lock, color: Colors.blueAccent),
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -140,7 +129,7 @@ class _LoginPageState extends State<LoginPage> {
                               : CupertinoIcons.eye_slash,
                           color: Colors.blueAccent,
                         ),
-                        onPressed: _toggleObscureText,
+                        onPressed: changeEyeState,
                       ),
                     ),
                     validator: _validatePassword,
@@ -190,14 +179,13 @@ class _LoginPageState extends State<LoginPage> {
       return 'رمز عبور باید شامل حرف بزرگ، حرف کوچک و عدد باشد';
     }
 
-    if (_usernameController.text.isNotEmpty &&
-        value.contains(_usernameController.text)) {
+    if (_username.text.isNotEmpty && value.contains(_username.text)) {
       return 'رمز عبور نباید شامل نام کاربری باشد';
     }
     return null;
   }
 
-  void _toggleObscureText() {
+  void changeEyeState() {
     setState(() {
       _obscureText = !_obscureText;
     });

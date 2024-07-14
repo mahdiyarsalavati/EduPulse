@@ -13,8 +13,8 @@ class ChangePasswordPage extends StatefulWidget {
 
 class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final _formKey = GlobalKey<FormState>();
-  final _passwordController = TextEditingController();
-  final _verifyPasswordController = TextEditingController();
+  final _password = TextEditingController();
+  final _verifyPassword = TextEditingController();
   bool _obscurePassword = true;
   bool _obscureVerifyPassword = true;
   late Socket _socket;
@@ -27,8 +27,8 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   @override
   void dispose() {
-    _passwordController.dispose();
-    _verifyPasswordController.dispose();
+    _password.dispose();
+    _verifyPassword.dispose();
     _socket.close();
     super.dispose();
   }
@@ -38,7 +38,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   }
 
   void _sendUpdatedPassword(String username, String newPassword) {
-    String message = 'CHANGE_PASSWORD $username $newPassword';
+    String message = 'CHANGE_PASSWORD ' + username + ' ' + newPassword;
     _socket.write(message);
   }
 
@@ -66,7 +66,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   }
 
   String? _validateVerifyPassword(String? value) {
-    if (value != _passwordController.text) {
+    if (value != _password.text) {
       return 'رمز عبورها مطابقت ندارند';
     }
     return null;
@@ -74,7 +74,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      String newPassword = _passwordController.text;
+      String newPassword = _password.text;
       _sendUpdatedPassword(widget.username, newPassword);
       Navigator.pop(context);
     }
@@ -110,7 +110,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 style: TextStyle(fontSize: 14),
               ),
               TextFormField(
-                controller: _passwordController,
+                controller: _password,
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   suffixIcon: IconButton(
@@ -130,7 +130,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
                 style: TextStyle(fontSize: 14),
               ),
               TextFormField(
-                controller: _verifyPasswordController,
+                controller: _verifyPassword,
                 obscureText: true,
                 validator: _validateVerifyPassword,
               ),

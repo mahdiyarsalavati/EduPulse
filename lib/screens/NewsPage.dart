@@ -11,13 +11,13 @@ class NewsPage extends StatelessWidget {
       body: ListView(
         padding: EdgeInsets.all(16.0),
         children: [
-          _buildNewsCard(
+          newsWidget(
               context,
               'مسابقه نیوبیز',
               '/Users/mahdiyarsalavati/StudioProjects/EduPulse/frontend/assets/Backgrounds/newbies.png',
               '۱۲ تیر',
               "مسابقات برنامه‌نویسی NEWBIES 2024 در دانشکده مهندسی و علوم کامپیوتر، دانشگاه شهید بهشتی که با هدف ارتقای مهارت‌های برنامه‌نویسی برگزار شد."),
-          _buildNewsCard(
+          newsWidget(
               context,
               'اطلاعیه آموزشی',
               '/Users/mahdiyarsalavati/StudioProjects/EduPulse/frontend/assets/Backgrounds/newsPic.png',
@@ -28,7 +28,7 @@ class NewsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildNewsCard(BuildContext context, String title, String imagePath,
+  Widget newsWidget(BuildContext context, String title, String imagePath,
       String date, String description) {
     return Card(
       color: Colors.deepPurple,

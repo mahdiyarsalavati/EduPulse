@@ -15,7 +15,7 @@ class CoursesPage extends StatefulWidget {
 class _CoursesPageState extends State<CoursesPage> {
   List<Course> _courses = [];
   List<Course> _pendingCourses = [];
-  final _courseCodeController = TextEditingController();
+  final _courseCode = TextEditingController();
   late Socket _socket;
 
   @override
@@ -30,16 +30,18 @@ class _CoursesPageState extends State<CoursesPage> {
   }
 
   void _fetchCourses() {
-    _socket.write('GET_COURSES_OF_STUDENT ${widget.username}\n');
+    _socket.write('GET_COURSES_OF_STUDENT ' + widget.username + '\n');
     _socket.listen((data) {
       String response = String.fromCharCodes(data).trim();
       if (response.isNotEmpty) {
         List<String> courseDetails = response.split(' END ');
         setState(() {
-          _courses = courseDetails
-              .where((detail) => detail.isNotEmpty)
-              .map((detail) => Course.fromString(detail))
-              .toList();
+          _courses.clear();
+          for (var detail in courseDetails) {
+            if (detail.isNotEmpty) {
+              _courses.add(Course.parse(detail));
+            }
+          }
         });
       }
     });
@@ -47,21 +49,29 @@ class _CoursesPageState extends State<CoursesPage> {
 
   void _requestJoinCourse(String courseCode) async {
     setState(() {
-      _pendingCourses.add(Course(courseCode, '...', '0', 0, '...'));
+      _pendingCourses.add(Course("در حال لود شدن", '...', '0', 0, '...'));
     });
     Socket socket = await Socket.connect('127.0.0.1', 12345);
-    socket.write('REQUEST_JOIN_COURSE ${widget.username} $courseCode\n');
+    socket.write('REQUEST_JOIN_COURSE ' + widget.username +' ' + courseCode + '\n');
     socket.flush();
     socket.listen((data) {
       String response = String.fromCharCodes(data).trim();
       if (response == 'JOIN_SUCCESS') {
         setState(() {
-          _pendingCourses.removeWhere((course) => course.name == courseCode);
+          for (int i = _pendingCourses.length - 1; i >= 0; i--) {
+            if (_pendingCourses[i].name == courseCode) {
+              _pendingCourses.removeAt(i);
+            }
+          }
           _fetchCourses();
         });
       } else {
         setState(() {
-          _pendingCourses.removeWhere((course) => course.name == courseCode);
+          for (int i = _pendingCourses.length - 1; i >= 0; i--) {
+            if (_pendingCourses[i].name == courseCode) {
+              _pendingCourses.removeAt(i);
+            }
+          }
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('کد درخواستی موجود نبود'),
@@ -79,14 +89,14 @@ class _CoursesPageState extends State<CoursesPage> {
         return AlertDialog(
           title: Text('افزودن کلاس جدید'),
           content: TextField(
-            controller: _courseCodeController,
+            controller: _courseCode,
             decoration:
                 InputDecoration(hintText: 'کد گلستان درس را وارد کنید...'),
           ),
           actions: [
             ElevatedButton(
               onPressed: () {
-                _requestJoinCourse(_courseCodeController.text);
+                _requestJoinCourse(_courseCode.text);
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text('درخواست شما برای آموزش ارسال شد'),
@@ -108,7 +118,7 @@ class _CoursesPageState extends State<CoursesPage> {
   @override
   void dispose() {
     _socket.close();
-    _courseCodeController.dispose();
+    _courseCode.dispose();
     super.dispose();
   }
 
@@ -153,11 +163,10 @@ class _CoursesPageState extends State<CoursesPage> {
             ),
             Expanded(
               child: ListView(
-                children:
-                    _courses.map((course) => CourseCard(course)).toList() +
-                        _pendingCourses
-                            .map((course) => CourseCard(course))
-                            .toList(),
+                children: [
+                  for (var course in _courses) CourseCard(course),
+                  for (var course in _pendingCourses) CourseCard(course),
+                ],
               ),
             ),
           ],
@@ -182,9 +191,10 @@ class Course {
     this.bestStudent,
   );
 
-  factory Course.fromString(String str) {
+  static Course parse(String str) {
     List<String> parts = str.trim().split(' ');
-    return Course(parts[0], parts[1], parts[2], int.parse(parts[3]), parts[4]);
+    return new Course(
+        parts[0], parts[1], parts[2], int.parse(parts[3]), parts[4]);
   }
 }
 
@@ -222,25 +232,25 @@ class CourseCard extends StatelessWidget {
               ),
               Divider(color: Colors.white),
               Text(
-                'استاد: ${course.teacherName}',
+                'استاد: ' + course.teacherName,
                 style: TextStyle(color: Colors.white, fontSize: 20),
                 textAlign: TextAlign.right,
                 textDirection: TextDirection.rtl,
               ),
               Text(
-                'تعداد واحد: ${course.creditUnit}',
+                'تعداد واحد: ' + course.creditUnit,
                 style: TextStyle(color: Colors.white, fontSize: 20),
                 textAlign: TextAlign.right,
                 textDirection: TextDirection.rtl,
               ),
               Text(
-                'تکالیف باقی‌مانده: ${course.noOfAssignments}',
+                'تکالیف باقی‌مانده: ' + course.noOfAssignments.toString(),
                 style: TextStyle(color: Colors.white, fontSize: 20),
                 textAlign: TextAlign.right,
                 textDirection: TextDirection.rtl,
               ),
               Text(
-                'دانشجوی ممتاز: ${course.bestStudent}',
+                'دانشجوی ممتاز: ' + course.bestStudent,
                 style: TextStyle(color: Colors.white, fontSize: 20),
                 textAlign: TextAlign.right,
                 textDirection: TextDirection.rtl,

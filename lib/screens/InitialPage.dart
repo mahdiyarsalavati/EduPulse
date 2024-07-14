@@ -7,10 +7,8 @@ import 'SignupPage.dart';
 class InitialPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    var screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           Container(
@@ -25,7 +23,7 @@ class InitialPage extends StatelessWidget {
             child: SafeArea(
               child: Column(
                 children: [
-                  SizedBox(height: screenSize.width / 10),
+                  SizedBox(height: 40),
                   Text(
                     "ادیوپالس",
                     style: TextStyle(
@@ -33,16 +31,15 @@ class InitialPage extends StatelessWidget {
                   ),
                   Text("برنامه مدیریت دانشگاهی",
                       style: TextStyle(color: Colors.white)),
-                  SizedBox(height: screenSize.width / 2.6),
+                  SizedBox(height:150),
                   Image.asset("assets/Backgrounds/banner.png"),
-                  SizedBox(
+                  Container(
                     width: 300,
                     height: 60,
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => LoginPage()),
+                          MaterialPageRoute(builder: (context) => LoginPage()),
                         );
                       },
                       icon: Icon(CupertinoIcons.person_alt_circle),
@@ -51,14 +48,13 @@ class InitialPage extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 20),
-                  SizedBox(
+                  Container(
                     width: 300,
                     height: 60,
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(
-                              builder: (context) => SignupPage()),
+                          MaterialPageRoute(builder: (context) => SignupPage()),
                         );
                       },
                       icon: Icon(CupertinoIcons.person_add),

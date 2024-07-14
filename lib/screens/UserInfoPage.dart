@@ -42,7 +42,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
     _firstName = widget.firstName;
     _lastName = widget.lastName;
     _connectToSocket().then((_) {
-      _socket.write('GET_INFOPAGE_DATA ${widget.username}\n');
+      _socket.write('GET_INFOPAGE_DATA ' + widget.username + '\n');
     });
   }
 
@@ -175,7 +175,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
               ),
             ),
             SizedBox(height: 10),
-            Text('$_firstName $_lastName',
+            Text(_firstName + _lastName,
                 textAlign: TextAlign.center,
                 style:
                 TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),

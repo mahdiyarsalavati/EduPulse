@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:EDUPULSE/screens/AssignmentsPage.dart';
 import 'package:EDUPULSE/screens/CoursesPage.dart';
@@ -47,91 +48,49 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _connectToSocket();
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _connectToSocket() async {
+    try {
+      _socket = await Socket.connect('127.0.0.1', 12345);
+      _fetchData();
+    } catch (e) {
+      print("Could not connect to socket");
+    }
+  }
+
+  Future<void> _fetchData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? username = prefs.getString('username');
-    String? password = prefs.getString('password');
 
-    if (username != null && password != null) {
-      try {
-        _socket = await Socket.connect('127.0.0.1', 12345);
-        await _autoLogin(username, password);
-      } catch (e) {
-      }
+    if (username != null) {
+      _socket.write('GET_HOMEPAGE_DATA ' + username + '\n');
+      _socket.listen((List<int> event) {
+        final response = String.fromCharCodes(event).trim();
+        if (response.startsWith('HOMEPAGE_DATA')) {
+          final parts = response.split(' ');
+          setState(() {
+            _parseString(username, parts);
+          });
+        }
+      });
     } else {
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/');
     }
   }
 
-  Future<void> _autoLogin(String username, String password) async {
-    _socket.write('LOGIN $username $password\n');
-
-    _socket.listen((List<int> event) async {
-      final response = String.fromCharCodes(event).trim();
-      if (response.startsWith('LOGIN_SUCCESS')) {
-        _socket.write('GET_HOMEPAGE_DATA $username\n');
-      } else if (response.startsWith('HOMEPAGE_DATA')) {
-        final parts = response.split(' ');
-        setState(() {
-          _username = username;
-          _firstName = parts[1];
-          _lastName = parts[2];
-          _numberOfAssignments = int.parse(parts[3]);
-          _numberOfExams = int.parse(parts[4]);
-          _highestGrade = double.parse(parts[5]);
-          _lowestGrade = double.parse(parts[6]);
-          _activeAssignments =
-              parts.sublist(7, parts.indexOf('END')).toList();
-          _notActiveAssignments =
-              parts.sublist(parts.indexOf('END') + 1).toList();
-          _completedAssignments = _notActiveAssignments.length;
-        });
-      } else {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    });
-  }
-
-  Future<void> fetchData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? username = prefs.getString('username');
-    String? password = prefs.getString('password');
-
-    if (username != null && password != null) {
-      try {
-        _socket = await Socket.connect('127.0.0.1', 12345);
-        _socket.write('LOGIN $username $password\n');
-
-        _socket.listen((List<int> event) async {
-          final response = String.fromCharCodes(event).trim();
-          if (response.startsWith('LOGIN_SUCCESS')) {
-            _socket.write('GET_HOMEPAGE_DATA $username\n');
-          } else if (response.startsWith('HOMEPAGE_DATA')) {
-            final parts = response.split(' ');
-            setState(() {
-              _username = username;
-              _firstName = parts[1];
-              _lastName = parts[2];
-              _numberOfAssignments = int.parse(parts[3]);
-              _numberOfExams = int.parse(parts[4]);
-              _highestGrade = double.parse(parts[5]);
-              _lowestGrade = double.parse(parts[6]);
-              _activeAssignments =
-                  parts.sublist(7, parts.indexOf('END')).toList();
-              _notActiveAssignments =
-                  parts.sublist(parts.indexOf('END') + 1).toList();
-              _completedAssignments = _notActiveAssignments.length;
-            });
-          } else {
-            Navigator.pushReplacementNamed(context, '/login');
-          }
-        });
-      } catch (e) {
-      }
-    }
+  void _parseString(String username, List<String> parts) {
+    _username = username;
+    _firstName = parts[1];
+    _lastName = parts[2];
+    _numberOfAssignments = int.parse(parts[3]);
+    _numberOfExams = int.parse(parts[4]);
+    _highestGrade = double.parse(parts[5]);
+    _lowestGrade = double.parse(parts[6]);
+    _activeAssignments = parts.sublist(7, parts.indexOf('END')).toList();
+    _notActiveAssignments = parts.sublist(parts.indexOf('END') + 1).toList();
+    _completedAssignments = _notActiveAssignments.length;
   }
 
   void _incrementCompletedAssignments() {
@@ -168,10 +127,10 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _buildPageContent(),
+      body: _homePage(),
       bottomNavigationBar: BottomNavigationBar(
         items: [
-          for (int i = 0; i < _pageTitles.length; i++)
+          for (int i = 0; i < 5; i++)
             BottomNavigationBarItem(
               icon: Icon(_pageIcons[i]),
               label: _pageTitles[i],
@@ -187,7 +146,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPageContent() {
+  Widget _homePage() {
     switch (_selectedIndex) {
       case 1:
         return TodoScreen(username: _username);
@@ -205,10 +164,9 @@ class _HomePageState extends State<HomePage> {
         return SingleChildScrollView(
           child: SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 20),
-                _buildSectionTitle('خلاصه'),
+                _titles('خلاصه'),
                 SizedBox(height: 16),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -219,28 +177,29 @@ class _HomePageState extends State<HomePage> {
                     crossAxisSpacing: 16,
                     physics: NeverScrollableScrollPhysics(),
                     children: [
-                      _buildSummaryCard(
+                      _summary(
                         'امتحان داری',
-                        toPersian(_numberOfExams.toString()),
+                        _toPersian(_numberOfExams.toString()),
                         CupertinoIcons.pencil_outline,
-                        Colors.deepPurple,
+                        Colors.cyanAccent,
                       ),
-                      _buildSummaryCard(
+                      _summary(
                         'تمرین داری',
-                        toPersian((_numberOfAssignments - _completedAssignments)
-                            .toString()),
+                        _toPersian(
+                            (_numberOfAssignments - _completedAssignments)
+                                .toString()),
                         CupertinoIcons.rectangle_paperclip,
-                        Colors.blueAccent,
+                        Colors.black,
                       ),
-                      _buildSummaryCard(
+                      _summary(
                         'بدترین نمره',
-                        toPersian(_lowestGrade.toString()),
+                        _toPersian(_lowestGrade.toString()),
                         CupertinoIcons.battery_25,
                         Colors.red,
                       ),
-                      _buildSummaryCard(
+                      _summary(
                         'بهترین نمره',
-                        toPersian(_highestGrade.toString()),
+                        _toPersian(_highestGrade.toString()),
                         CupertinoIcons.chart_bar_fill,
                         Colors.green,
                       ),
@@ -248,27 +207,27 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 SizedBox(height: 30),
-                _buildSectionTitle('تسک های جاری'),
+                _titles('تمرین های جاری'),
                 SizedBox(height: 10),
-                isStringListEmpty(_activeAssignments)
+                _isStringListEmpty(_activeAssignments)
                     ? Center(child: Text('تسکی وجود نداره'))
                     : Column(
-                  children: _activeAssignments
-                      .map((assignment) =>
-                      _buildTaskCard(assignment, isActive: true))
-                      .toList(),
-                ),
+                        children: [
+                          for (var assignment in _activeAssignments)
+                            _taskEntry(assignment, isActive: true),
+                        ],
+                      ),
                 SizedBox(height: 40),
-                _buildSectionTitle('کارهای انجام شده'),
+                _titles('کارهای انجام شده'),
                 SizedBox(height: 10),
                 _notActiveAssignments.isEmpty
                     ? Center(child: Text('تسکی وجود نداره'))
                     : Column(
-                  children: _notActiveAssignments
-                      .map((assignment) =>
-                      _buildTaskCard(assignment, isActive: false))
-                      .toList(),
-                ),
+                        children: [
+                          for (var assignment in _notActiveAssignments)
+                            _taskEntry(assignment, isActive: false),
+                        ],
+                      ),
                 SizedBox(height: 200),
               ],
             ),
@@ -277,19 +236,19 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Widget _buildSectionTitle(String title) {
+  Widget _titles(String title) {
     return Center(
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.deepPurple, width: 3),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           title,
           style: TextStyle(
-            fontFamily: "IRANSansX",
-            fontSize: 24,
+            fontFamily: "Badee",
+            fontSize: 30,
             color: Colors.deepPurple,
             fontWeight: FontWeight.bold,
           ),
@@ -298,10 +257,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildSummaryCard(
-      String title, String value, IconData icon, Color color) {
-    return Card(
-      elevation: 4,
+  Widget _summary(String title, String value, IconData icon, Color color) {
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+          gradient: LinearGradient(
+              colors: [Colors.deepPurple.withOpacity(0.6), Colors.deepPurple],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -310,16 +273,24 @@ class _HomePageState extends State<HomePage> {
             Icon(icon, size: 40, color: color),
             SizedBox(height: 8),
             Text(value,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            Text(title, style: TextStyle(fontSize: 16)),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+            Text(title, style: TextStyle(fontSize: 16, color: Colors.white)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTaskCard(String task, {bool isActive = true}) {
-    return Card(
+  Widget _taskEntry(String task, {bool isActive = true}) {
+    return Container(
+      width: 380,
+      decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.all(Radius.circular(20)),
+          border: Border.all(width: 2)),
       child: ListTile(
         leading: isActive
             ? Icon(Icons.check_box_outline_blank, color: Colors.green)
@@ -327,18 +298,18 @@ class _HomePageState extends State<HomePage> {
         title: Text(task),
         trailing: isActive
             ? IconButton(
-          icon: Icon(CupertinoIcons.check_mark_circled,
-              color: Colors.blueAccent),
-          onPressed: () {
-            _completeTask(task);
-          },
-        )
+                icon: Icon(CupertinoIcons.check_mark_circled,
+                    color: Colors.blueAccent),
+                onPressed: () {
+                  _completeTask(task);
+                },
+              )
             : IconButton(
-          icon: Icon(CupertinoIcons.clear_circled, color: Colors.red),
-          onPressed: () {
-            _revertTask(task);
-          },
-        ),
+                icon: Icon(CupertinoIcons.clear_circled, color: Colors.red),
+                onPressed: () {
+                  _revertTask(task);
+                },
+              ),
       ),
     );
   }
@@ -367,10 +338,10 @@ class _HomePageState extends State<HomePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('username');
     await prefs.remove('password');
-    Navigator.pushReplacementNamed(context, '/login');
+    Navigator.pushReplacementNamed(context, '/');
   }
 
-  String toPersian(String input) {
+  String _toPersian(String input) {
     String result = "";
 
     for (var char in input.split('')) {
@@ -413,7 +384,7 @@ class _HomePageState extends State<HomePage> {
     return result;
   }
 
-  bool isStringListEmpty(List<String> list) {
+  bool _isStringListEmpty(List<String> list) {
     if (list.isEmpty) return true;
     if (list[0].length == 0) return true;
     return false;

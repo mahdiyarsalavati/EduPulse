@@ -10,12 +10,11 @@ class SignupPage extends StatefulWidget {
 
 class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _verifyPasswordController =
-  TextEditingController();
+  final TextEditingController _firstName = TextEditingController();
+  final TextEditingController _lastName = TextEditingController();
+  final TextEditingController _username = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _verifyPassword = TextEditingController();
   bool _obscureText = true;
   late Socket _socket;
 
@@ -27,24 +26,24 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _connectToSocket() async {
     _socket = await Socket.connect('127.0.0.1', 12345);
-    _socket.listen((List<int> event) {
-      final response = String.fromCharCodes(event).trim();
-      _handleSocketResponse(response);
+    _socket.listen((List<int> res) {
+      final response = String.fromCharCodes(res).trim();
+      signupLogic(response);
     });
   }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _usernameController.dispose();
-    _passwordController.dispose();
-    _verifyPasswordController.dispose();
+    _firstName.dispose();
+    _lastName.dispose();
+    _username.dispose();
+    _password.dispose();
+    _verifyPassword.dispose();
     _socket.close();
     super.dispose();
   }
 
-  void _handleSocketResponse(String response) {
+  void signupLogic(String response) {
     if (response == 'SIGNUP_SUCCESS') {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -70,7 +69,7 @@ class _SignupPageState extends State<SignupPage> {
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
       _socket.write(
-          'SIGNUP ${_firstNameController.text} ${_lastNameController.text} ${_usernameController.text} ${_passwordController.text}\n');
+          'SIGNUP ' + _firstName.text + ' ' + _lastName.text + ' ' + _username.text+' ' +_password.text + '\n');
     }
   }
 
@@ -112,15 +111,14 @@ class _SignupPageState extends State<SignupPage> {
       return 'رمز عبور باید شامل حداقل یک عدد باشد';
     }
 
-    if (_usernameController.text.isNotEmpty &&
-        value.contains(_usernameController.text)) {
+    if (_username.text.isNotEmpty && value.contains(_username.text)) {
       return 'رمز عبور نباید شامل نام کاربری باشد';
     }
     return null;
   }
 
   String? _validateVerifyPassword(String? value) {
-    if (value != _passwordController.text) {
+    if (value != _password.text) {
       return 'رمز عبورها با هم مطابقت ندارند';
     }
     return null;
@@ -138,14 +136,12 @@ class _SignupPageState extends State<SignupPage> {
       appBar: AppBar(title: Text('ثبت نام')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                const SizedBox(
-                  height: 50,
-                ),
+                const SizedBox(height: 50),
                 const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -161,27 +157,27 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 const SizedBox(height: 50),
                 TextFormField(
-                  controller: _firstNameController,
+                  controller: _firstName,
                   decoration: InputDecoration(
                     labelText: 'نام',
                     prefixIcon:
-                    Icon(CupertinoIcons.person, color: Colors.blueAccent),
+                        Icon(CupertinoIcons.person, color: Colors.blueAccent),
                   ),
                   validator: _validateName,
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                  controller: _lastNameController,
+                  controller: _lastName,
                   decoration: InputDecoration(
                     labelText: 'نام خانوادگی',
                     prefixIcon:
-                    Icon(CupertinoIcons.person, color: Colors.blueAccent),
+                        Icon(CupertinoIcons.person, color: Colors.blueAccent),
                   ),
                   validator: _validateName,
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                  controller: _usernameController,
+                  controller: _username,
                   decoration: InputDecoration(
                     labelText: 'نام کاربری',
                     prefixIcon: Icon(CupertinoIcons.person_alt_circle,
@@ -191,12 +187,12 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                  controller: _passwordController,
+                  controller: _password,
                   obscureText: _obscureText,
                   decoration: InputDecoration(
                     labelText: 'رمز عبور',
                     prefixIcon:
-                    Icon(CupertinoIcons.lock, color: Colors.blueAccent),
+                        Icon(CupertinoIcons.lock, color: Colors.blueAccent),
                     suffixIcon: IconButton(
                       icon: Icon(_obscureText
                           ? CupertinoIcons.eye
@@ -208,12 +204,12 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
-                  controller: _verifyPasswordController,
+                  controller: _verifyPassword,
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'تایید رمز عبور',
                     prefixIcon:
-                    Icon(CupertinoIcons.lock, color: Colors.blueAccent),
+                        Icon(CupertinoIcons.lock, color: Colors.blueAccent),
                   ),
                   validator: _validateVerifyPassword,
                 ),

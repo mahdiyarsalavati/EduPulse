@@ -17,13 +17,13 @@ class RemoveAccountPage extends StatelessWidget {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => InitialPage()),
-      (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
     );
   }
 
   Future<void> _sendRemoveAccountCommand(String username) async {
     Socket socket = await Socket.connect('127.0.0.1', 12345);
-    String message = 'REMOVE_STUDENT $username';
+    String message = 'REMOVE_STUDENT ' + username;
     socket.write(message);
     await socket.flush();
     socket.close();
@@ -32,6 +32,7 @@ class RemoveAccountPage extends StatelessWidget {
   Future<void> _removeUsernameFromPreferences() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('username');
+    await prefs.remove("tasks_" + username);
   }
 
   @override

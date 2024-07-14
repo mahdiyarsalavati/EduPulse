@@ -20,22 +20,22 @@ class EditInfoPage extends StatefulWidget {
 
 class _EditInfoPageState extends State<EditInfoPage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
+  late TextEditingController _firstName;
+  late TextEditingController _lastName;
   late Socket _socket;
 
   @override
   void initState() {
     super.initState();
-    _firstNameController = TextEditingController(text: widget.firstName);
-    _lastNameController = TextEditingController(text: widget.lastName);
+    _firstName = TextEditingController(text: widget.firstName);
+    _lastName = TextEditingController(text: widget.lastName);
     _connectToServer();
   }
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
+    _firstName.dispose();
+    _lastName.dispose();
     _socket.close();
     super.dispose();
   }
@@ -45,14 +45,14 @@ class _EditInfoPageState extends State<EditInfoPage> {
   }
 
   void _sendUpdatedInfo(String username, String firstName, String lastName) {
-    String message = 'CHANGE_NAME $username $firstName $lastName';
+    String message = 'CHANGE_NAME ' + username + firstName + lastName;
     _socket.write(message);
   }
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      String updatedFirstName = _firstNameController.text;
-      String updatedLastName = _lastNameController.text;
+      String updatedFirstName = _firstName.text;
+      String updatedLastName = _lastName.text;
       _sendUpdatedInfo(widget.username, updatedFirstName, updatedLastName);
       Navigator.pop(
         context,
@@ -79,7 +79,7 @@ class _EditInfoPageState extends State<EditInfoPage> {
               Text("نام",
                   textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
               TextFormField(
-                controller: _firstNameController,
+                controller: _firstName,
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.right,
                 validator: (value) {
@@ -92,7 +92,7 @@ class _EditInfoPageState extends State<EditInfoPage> {
               Text(" نام خانوادگی",
                   textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
               TextFormField(
-                controller: _lastNameController,
+                controller: _lastName,
                 textDirection: TextDirection.rtl,
                 textAlign: TextAlign.right,
                 validator: (value) {

@@ -45,10 +45,12 @@
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
+
+    <!-- Permissions for File Picker -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app requires access to the photo library to select photos and files.</string>
     <key>NSCameraUsageDescription</key>
     <string>This app requires access to the camera to take photos.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>This app requires access to the photo library to select photos.</string>
 
     <!-- Notification Permissions -->
     <key>UIBackgroundModes</key>
@@ -58,6 +60,15 @@
     </array>
     <key>NSUserTrackingUsageDescription</key>
     <string>We need your permission to track usage data.</string>
+
+    <key>NSAppTransportSecurity</key>
+    <dict>
+      <key>NSAllowsArbitraryLoads</key>
+      <true/>
+    </dict>
+
+
+    <!-- App Transport Security -->
     <key>NSAppTransportSecurity</key>
     <dict>
         <key>NSAllowsArbitraryLoads</key>

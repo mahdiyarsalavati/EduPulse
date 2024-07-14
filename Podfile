@@ -1,7 +1,5 @@
-# Uncomment this line to define a global platform for your project
 platform :ios, '12.0'
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -37,9 +35,8 @@ target 'Runner' do
     inherit! :search_paths
   end
 
-
-  # Add flutter_local_notifications dependencies
-  pod 'flutter_local_notifications', :path => '.symlinks/plugins/flutter_local_notifications/ios'
+  # Add your pods here
+  pod 'file_picker', :path => '.symlinks/plugins/file_picker/ios'
 end
 
 post_install do |installer|
